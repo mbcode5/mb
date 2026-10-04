@@ -1,36 +1,89 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Групповой Чат</title>
+  <title>Групповой Чат Pro</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
-    body { background-color: #e9ecef; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
-    .card { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-    h2 { font-size: 20px; margin-bottom: 15px; color: #1c1e21; text-align: center; }
-    input { width: 100%; padding: 12px; margin-top: 10px; border: 1px solid #ccd0d5; border-radius: 6px; font-size: 15px; outline: none; }
-    input:focus { border-color: #1877f2; }
-    button { width: 100%; padding: 12px; margin-top: 12px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-    .btn-primary { background: #1877f2; color: white; }
-    .btn-primary:hover { background: #166fe5; }
+    /* Переменные Тем */
+    :root {
+      --bg-color: #f0f2f5;
+      --card-bg: #ffffff;
+      --text-main: #050505;
+      --text-sub: #65676b;
+      --border-color: #e4e6eb;
+      --input-bg: #f0f2f5;
+      --primary: #0084ff;
+      --primary-hover: #0073e6;
+      --msg-my: linear-gradient(135deg, #0084ff, #00c6ff);
+      --msg-my-text: #ffffff;
+      --msg-their: #e4e6eb;
+      --msg-their-text: #050505;
+      --shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+      --modal-bg: rgba(0, 0, 0, 0.5);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #18191a;
+      --card-bg: #242526;
+      --text-main: #e4e6eb;
+      --text-sub: #b0b3b8;
+      --border-color: #393a3b;
+      --input-bg: #3a3b3c;
+      --primary: #2374e1;
+      --primary-hover: #3982e8;
+      --msg-my: linear-gradient(135deg, #2374e1, #0099ff);
+      --msg-my-text: #ffffff;
+      --msg-their: #3a3b3c;
+      --msg-their-text: #e4e6eb;
+      --shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+      --modal-bg: rgba(0, 0, 0, 0.75);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; transition: background-color 0.25s, color 0.25s, border-color 0.25s; }
+    body { background-color: var(--bg-color); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
+    
+    .card { background: var(--card-bg); padding: 24px; border-radius: 16px; width: 100%; max-width: 500px; box-shadow: var(--shadow); border: 1px solid var(--border-color); position: relative; }
+    h2 { font-size: 22px; margin-bottom: 20px; text-align: center; font-weight: 700; color: var(--text-main); }
+    
+    input { width: 100%; padding: 12px 16px; margin-top: 10px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 15px; outline: none; background: var(--input-bg); color: var(--text-main); }
+    input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0, 132, 255, 0.2); }
+    
+    button { width: 100%; padding: 12px; margin-top: 12px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: transform 0.1s, opacity 0.2s; }
+    button:active { transform: scale(0.98); }
+    
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
     .btn-secondary { background: #42b72a; color: white; }
-    .btn-secondary:hover { background: #36a420; }
-    .btn-danger { background: #dc3545; color: white; padding: 8px 14px; font-size: 13px; width: auto; margin-top: 0; }
-    .btn-danger:hover { background: #bd2130; }
-    .btn-tab { background: #e4e6eb; color: #333; padding: 10px; flex: 1; border-radius: 6px; font-size: 14px; margin-top: 0; }
-    .btn-tab.active { background: #1877f2; color: white; }
+    .btn-secondary:hover { opacity: 0.9; }
+    .btn-icon { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 12px; width: auto; font-size: 16px; margin: 0; border-radius: 8px; }
+    .btn-icon:hover { background: var(--border-color); }
+    .btn-danger { background: #dc3545; color: white; }
+
     .hidden { display: none !important; }
     .tabs { display: flex; gap: 8px; margin-bottom: 15px; }
-    
-    #chat-box { height: 350px; border: 1px solid #e4e6eb; border-radius: 8px; overflow-y: auto; padding: 12px; margin-top: 12px; background: #f7f8fa; display: flex; flex-direction: column; gap: 10px; }
-    .msg { padding: 9px 14px; border-radius: 12px; max-width: 80%; font-size: 14px; word-break: break-word; line-height: 1.4; }
-    .msg.my { background: #0084ff; color: white; align-self: flex-end; }
-    .msg.their { background: #e4e6eb; color: #050505; align-self: flex-start; }
-    .msg-author { font-size: 11px; opacity: 0.7; margin-bottom: 3px; font-weight: bold; }
-    .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-    .user-info { display: flex; flex-direction: column; font-size: 13px; }
+    .btn-tab { background: var(--input-bg); color: var(--text-sub); padding: 10px; flex: 1; border-radius: 8px; font-size: 14px; margin-top: 0; border: 1px solid var(--border-color); }
+    .btn-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    /* Шапка чата */
+    .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 14px; }
+    .user-info { display: flex; flex-direction: column; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+
+    /* Окно сообщений */
+    #chat-box { height: 380px; border-radius: 12px; overflow-y: auto; padding: 12px; margin-top: 14px; background: var(--input-bg); display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border-color); }
+    .msg { padding: 10px 14px; border-radius: 16px; max-width: 80%; font-size: 14px; word-break: break-word; line-height: 1.4; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .msg.my { background: var(--msg-my); color: var(--msg-my-text); align-self: flex-end; border-bottom-right-radius: 4px; }
+    .msg.their { background: var(--msg-their); color: var(--msg-their-text); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .msg-author { font-size: 11px; opacity: 0.85; margin-bottom: 3px; font-weight: 700; }
+
+    /* Модальное окно Настроек */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--modal-bg); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
+    .modal { background: var(--card-bg); padding: 24px; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .setting-item { margin-bottom: 16px; }
+    .setting-label { font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; display: block; }
   </style>
 </head>
 <body>
@@ -39,20 +92,19 @@
   <div id="auth-section" class="card">
     <h2>Авторизация</h2>
     
-    <!-- Переключатель Вход / Регистрация -->
     <div class="tabs">
       <button id="tab-login-btn" class="btn-tab active" onclick="switchAuthTab('login')">Войти</button>
       <button id="tab-reg-btn" class="btn-tab" onclick="switchAuthTab('reg')">Регистрация</button>
     </div>
 
-    <!-- Поля Входа -->
+    <!-- Форма Входа -->
     <div id="login-form">
       <input type="email" id="login-email" placeholder="Ваш Email">
       <input type="password" id="login-password" placeholder="Пароль" onkeydown="if(event.key==='Enter') login()">
       <button class="btn-primary" onclick="login()">🔑 Войти в аккаунт</button>
     </div>
 
-    <!-- Поля Регистрации -->
+    <!-- Форма Регистрации -->
     <div id="reg-form" class="hidden">
       <input type="text" id="reg-username" placeholder="Ваше Имя / Никнейм (например: Билол)">
       <input type="email" id="reg-email" placeholder="Ваш Email">
@@ -65,17 +117,42 @@
   <div id="chat-section" class="card hidden">
     <div class="header-bar">
       <div class="user-info">
-        <span>👤 <b id="user-display">---</b></span>
-        <small id="user-email" style="color: #65676b; font-size: 11px;"></small>
+        <span style="font-size: 16px;">💬 <b id="user-display">---</b></span>
+        <small id="user-email" style="color: var(--text-sub); font-size: 11px;"></small>
       </div>
-      <button class="btn-danger" onclick="logout()">🚪 Выйти из аккаунта</button>
+      <div class="header-actions">
+        <button class="btn-icon" title="Сменить тему" onclick="toggleTheme()">☀️/🌙</button>
+        <button class="btn-icon" title="Настройки" onclick="openSettings()">⚙️</button>
+        <button class="btn-icon" title="Выйти" onclick="logout()" style="color: #dc3545;">🚪</button>
+      </div>
     </div>
 
     <div id="chat-box"></div>
 
-    <div style="display: flex; gap: 8px; margin-top: 10px;">
+    <div style="display: flex; gap: 8px; margin-top: 12px;">
       <input type="text" id="message-input" placeholder="Напишите сообщение..." onkeydown="if(event.key==='Enter') sendMessage()" style="margin-top: 0;">
       <button class="btn-primary" style="width: auto; padding: 0 20px; margin-top: 0;" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
+  <!-- Модальное окно Настроек -->
+  <div id="settings-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 style="font-size: 18px;">⚙️ Настройки</h3>
+        <button class="btn-icon" onclick="closeSettings()" style="padding: 4px 10px;">✕</button>
+      </div>
+      
+      <div class="setting-item">
+        <label class="setting-label">ТЕМА ОФОРМЛЕНИЯ</label>
+        <button class="btn-tab active" id="theme-toggle-btn" onclick="toggleTheme()">Переключить тему</button>
+      </div>
+
+      <div class="setting-item">
+        <label class="setting-label">АКТИВАЦИЯ ЧИТ-КОДА</label>
+        <input type="text" id="cheat-code-input" placeholder="Введите код (например: #delete_all)" style="margin-top: 0;">
+        <button class="btn-primary" onclick="applyCheatCode()" style="margin-top: 8px;">Активировать код ⚡</button>
+      </div>
     </div>
   </div>
 
@@ -84,10 +161,24 @@
     const SUPABASE_KEY = "sb_publishable_TSFvhqldPDdWGncB92rVag_KkdkwlZP";
 
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
     let currentUser = null;
 
-    // Отслеживание входа / выхода
+    // --- Переключение темы ---
+    let currentTheme = localStorage.getItem('chat_theme') || 'light';
+    applyTheme(currentTheme);
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('chat_theme', theme);
+      currentTheme = theme;
+    }
+
+    function toggleTheme() {
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      applyTheme(newTheme);
+    }
+
+    // --- Отслеживание состояния входа ---
     db.auth.onAuthStateChange((event, session) => {
       if (session) {
         currentUser = session.user;
@@ -98,7 +189,7 @@
       }
     });
 
-    // Переключение вкладок Войти / Регистрация
+    // --- Переключение вкладок Вход / Регистрация ---
     function switchAuthTab(type) {
       if (type === 'login') {
         document.getElementById('login-form').classList.remove('hidden');
@@ -113,28 +204,24 @@
       }
     }
 
-    // Кнопка Вход
+    // --- Авторизация ---
     async function login() {
       const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value.trim();
-
-      if (!email || !password) return alert('Пожалуйста, введите Email и Пароль!');
+      if (!email || !password) return alert('Введите Email и Пароль!');
 
       const { error } = await db.auth.signInWithPassword({ email, password });
-      if (error) {
-        alert('Ошибка входа: ' + error.message);
-      }
+      if (error) alert('Ошибка входа: ' + error.message);
     }
 
-    // Кнопка Регистрация
     async function register() {
       const username = document.getElementById('reg-username').value.trim();
       const email = document.getElementById('reg-email').value.trim();
       const password = document.getElementById('reg-password').value.trim();
 
-      if (!username || !email || !password) return alert('Заполните все поля для регистрации!');
+      if (!username || !email || !password) return alert('Заполните все поля!');
 
-      const { data, error } = await db.auth.signUp({
+      const { error } = await db.auth.signUp({
         email,
         password,
         options: { data: { username: username } }
@@ -142,20 +229,18 @@
 
       if (error) return alert('Ошибка регистрации: ' + error.message);
 
-      // Сразу входим после регистрации
       const { error: loginErr } = await db.auth.signInWithPassword({ email, password });
       if (loginErr) {
-        alert('Аккаунт создан! Нажмите "Войти в аккаунт".');
+        alert('Успешно! Войдите под своим логином.');
         switchAuthTab('login');
       }
     }
 
-    // Кнопка Выйти из аккаунта
     async function logout() {
       await db.auth.signOut();
     }
 
-    // Показать чат
+    // --- Отображение окон ---
     function showChat() {
       document.getElementById('auth-section').classList.add('hidden');
       document.getElementById('chat-section').classList.remove('hidden');
@@ -168,13 +253,44 @@
       subscribeToRealtime();
     }
 
-    // Показать форму входа
     function showAuth() {
       document.getElementById('auth-section').classList.remove('hidden');
       document.getElementById('chat-section').classList.add('hidden');
     }
 
-    // Загрузить сообщения
+    // --- Настройки и Чит-коды ---
+    function openSettings() {
+      document.getElementById('settings-modal').classList.remove('hidden');
+    }
+
+    function closeSettings() {
+      document.getElementById('settings-modal').classList.add('hidden');
+    }
+
+    async function applyCheatCode() {
+      const input = document.getElementById('cheat-code-input');
+      const code = input.value.trim();
+      if (!code) return;
+
+      if (code === '#delete_all') {
+        if (confirm('⚠️ ЧИТ-КОД АКТИВИРОВАН!\n\nВы действительно хотите удалить ВСЕ сообщения из общего чата?')) {
+          const { error } = await db.from('group_messages').delete().neq('id', 0);
+          
+          if (error) {
+            alert('Не удалось удалить: ' + error.message + '\n(Убедитесь, что для DELETE настроена политика RLS в Supabase)');
+          } else {
+            alert('💥 Все сообщения успешно удалены!');
+            loadMessages();
+            closeSettings();
+          }
+        }
+      } else {
+        alert('❌ Неизвестный чит-код!');
+      }
+      input.value = '';
+    }
+
+    // --- Загрузка и отправка сообщений ---
     async function loadMessages() {
       const { data, error } = await db
         .from('group_messages')
@@ -192,7 +308,6 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // Отрисовка сообщения
     function renderMessage(msg) {
       const chatBox = document.getElementById('chat-box');
       const div = document.createElement('div');
@@ -209,7 +324,6 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // Отправка сообщения
     async function sendMessage() {
       const input = document.getElementById('message-input');
       const text = input.value.trim();
@@ -230,7 +344,6 @@
       }
     }
 
-    // Подписка в реальном времени
     function subscribeToRealtime() {
       db.channel('public:group_messages')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'group_messages' }, () => {
