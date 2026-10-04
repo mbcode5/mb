@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Групповой Чат</title>
-  <!-- Подключаем Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
@@ -58,7 +57,6 @@
 
     let myName = localStorage.getItem('chat_username') || '';
 
-    // Авто-вход, если имя уже вводили
     if (myName) {
       startChat();
     }
@@ -83,15 +81,23 @@
 
       loadMessages();
       subscribeToRealtime();
+      
+      // Авто-обновление каждые 3 секунды для гарантии
+      setInterval(loadMessages, 3000);
     }
 
-    // Загрузить предыдущие сообщения
+    // Загрузить сообщения
     async function loadMessages() {
-      const { data } = await db
+      const { data, error } = await db
         .from('group_messages')
         .select('*')
         .order('created_at', { ascending: true })
         .limit(100);
+
+      if (error) {
+        console.error('Ошибка загрузки:', error.message);
+        return;
+      }
 
       const chatBox = document.getElementById('chat-box');
       chatBox.innerHTML = '';
@@ -101,7 +107,7 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // Отрисовка сообщения
+    // Отрисовка элемента сообщения
     function renderMessage(msg) {
       const chatBox = document.getElementById('chat-box');
       const div = document.createElement('div');
@@ -109,7 +115,7 @@
       
       div.className = `msg ${isMy ? 'my' : 'their'}`;
       div.innerHTML = `
-        <div class="msg-author">${isMy ? 'Вы' : msg.username}</div>
+        <div class="msg-author">${isMy ? 'Вы' : escapeHtml(msg.username)}</div>
         <div>${escapeHtml(msg.content)}</div>
       `;
       chatBox.appendChild(div);
@@ -124,23 +130,29 @@
 
       input.value = '';
 
-      await db.from('group_messages').insert([{
+      const { error } = await db.from('group_messages').insert([{
         username: myName,
         content: text
       }]);
+
+      if (error) {
+        alert('Ошибка отправки: ' + error.message);
+      } else {
+        loadMessages(); // Сразу обновляем чат
+      }
     }
 
-    // Подписка на новые сообщения в реальном времени
+    // Подписка Realtime
     function subscribeToRealtime() {
       db.channel('public:group_messages')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'group_messages' }, payload => {
-          renderMessage(payload.new);
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'group_messages' }, () => {
+          loadMessages();
         })
         .subscribe();
     }
 
     function escapeHtml(text) {
-      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      return text ? text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : '';
     }
   </script>
 </body>
