@@ -93,9 +93,7 @@
   </div>
 
   <script>
-    // ====================================================
-    // ВСТАВЬТЕ СВОИ КЛЮЧИ ИЗ SUPABASE СНИЗУ
-    // ====================================================
+    // Подключение вашей базы Supabase
     const SUPABASE_URL = "https://pgnmaoybgwesqctysveu.supabase.co";
     const SUPABASE_KEY = "sb_publishable_TSFvhqldPDdWGncB92rVag_KkdkwlZP";
 
@@ -194,7 +192,7 @@
           .from('profiles')
           .select('*')
           .neq('id', currentUser.id)
-          .ilike('username', `${query}%`); // Быстрый поиск с первых букв!
+          .ilike('username', `${query}%`);
 
         if (error || !data || data.length === 0) {
           list.innerHTML = '<div style="padding:10px; color:#888; text-align:center;">Пользователь не найден</div>';
@@ -242,8 +240,7 @@
       chatBox.innerHTML = '';
       if (data) {
         data.forEach(msg => {
-          const div = document.createElement('div');
-          div.className = `msg ${msg.sender_id === currentUser.id ? 'my' : 'their'}`;
+          const div = document.className = `msg ${msg.sender_id === currentUser.id ? 'my' : 'their'}`;
           div.innerText = msg.content;
           chatBox.appendChild(div);
         });
@@ -268,7 +265,7 @@
       loadMessages();
     }
 
-    // Подписка на сообщения в реальном времени
+    // Подписка на сообщения
     function subscribeToRealtime() {
       db.channel('public:messages')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
@@ -278,7 +275,7 @@
         }).subscribe();
     }
 
-    // Выход из аккаунта
+    // Выход
     async function logout() {
       await db.auth.signOut();
       location.reload();
