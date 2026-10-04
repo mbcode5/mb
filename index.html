@@ -18,17 +18,27 @@
     .btn-primary:hover { background: #166fe5; }
     .btn-secondary { background: #42b72a; color: white; }
     .btn-secondary:hover { background: #36a420; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn-danger:hover { background: #bd2130; }
+    .btn-tab { background: #f0f2f5; color: #333; padding: 10px 14px; font-size: 14px; border-radius: 6px; margin: 0; flex: 1; }
+    .btn-tab.active { background: #1877f2; color: white; }
     .hidden { display: none !important; }
     
-    .user-list { margin-top: 10px; max-height: 180px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; }
-    .user-item { padding: 10px 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-    .user-item:hover { background: #f0f2f5; }
+    .nav-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
     
-    #chat-box { height: 280px; border: 1px solid #e4e6eb; border-radius: 8px; overflow-y: auto; padding: 12px; margin-top: 12px; background: #f7f8fa; display: flex; flex-direction: column; gap: 8px; }
+    .user-list { margin-top: 10px; max-height: 220px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; background: #fff; }
+    .user-item { padding: 12px 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.15s; }
+    .user-item:hover { background: #e7f3ff; }
+    
+    #chat-box { height: 260px; border: 1px solid #e4e6eb; border-radius: 8px; overflow-y: auto; padding: 12px; margin-top: 12px; background: #f7f8fa; display: flex; flex-direction: column; gap: 8px; }
     .msg { padding: 9px 14px; border-radius: 16px; max-width: 75%; font-size: 14px; word-break: break-word; line-height: 1.4; }
     .msg.my { background: #0084ff; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
     .msg.their { background: #e4e6eb; color: #050505; align-self: flex-start; border-bottom-left-radius: 4px; }
-    .chat-header { font-weight: bold; margin-top: 15px; font-size: 16px; color: #333; }
+    .chat-header { font-weight: bold; margin-top: 10px; font-size: 16px; color: #333; display: flex; justify-content: space-between; align-items: center; }
+    
+    .profile-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px; margin-top: 10px; text-align: left; }
+    .profile-card p { margin-bottom: 10px; font-size: 15px; color: #495057; }
+    .profile-card strong { color: #212529; }
   </style>
 </head>
 <body>
@@ -37,28 +47,48 @@
   <div id="auth-section" class="card">
     <h2>Вход / Регистрация</h2>
     <input type="text" id="username" placeholder="Придумайте Никнейм (без пробелов)">
-    <input type="email" id="email" placeholder="Ваш Email">
-    <input type="password" id="password" placeholder="Пароль">
+    <input type="email" id="email" placeholder="Ваш Email (например: user@mail.ru)">
+    <input type="password" id="password" placeholder="Пароль (минимум 6 символов)">
     <button class="btn-primary" onclick="register()">Зарегистрироваться</button>
     <button class="btn-secondary" onclick="login()">Войти</button>
   </div>
 
   <!-- Главный экран соцсети -->
   <div id="app-section" class="card hidden">
-    <h2>Профиль: <span id="my-name" style="color:#1877f2;">...</span></h2>
-    
-    <!-- Поиск друзей -->
-    <input type="text" id="search" placeholder="🔍 Найти пользователя по никнейму..." oninput="searchUsers()">
-    <div id="users-list" class="user-list hidden"></div>
+    <!-- Навигация по вкладкам -->
+    <div class="nav-tabs">
+      <button id="tab-chats-btn" class="btn-tab active" onclick="switchTab('chats')">💬 Поиск и Чаты</button>
+      <button id="tab-profile-btn" class="btn-tab" onclick="switchTab('profile')">👤 Мой Профиль</button>
+    </div>
 
-    <!-- Чат -->
-    <div id="chat-wrapper" class="hidden">
-      <div class="chat-header">💬 Чат с: <span id="chat-target-name"></span></div>
-      <div id="chat-box"></div>
-      <div style="display: flex; gap: 8px;">
-        <input type="text" id="message-input" placeholder="Напишите сообщение..." onkeydown="if(event.key==='Enter') sendMessage()">
-        <button class="btn-primary" style="width: auto; padding: 0 20px; margin-top: 10px;" onclick="sendMessage()">➤</button>
+    <!-- Вкладка Поиска и Чата -->
+    <div id="tab-chats">
+      <input type="text" id="search" placeholder="🔍 Начните вводить никнейм..." oninput="searchUsersFast()">
+      <div id="users-list" class="user-list hidden"></div>
+
+      <!-- Чат -->
+      <div id="chat-wrapper" class="hidden">
+        <div class="chat-header">
+          <span>💬 Чат с: <span id="chat-target-name" style="color:#1877f2;"></span></span>
+          <button style="width: auto; padding: 4px 8px; margin:0; font-size: 12px; background: #6c757d; color: white;" onclick="closeChat()">❌ Закрыть</button>
+        </div>
+        <div id="chat-box"></div>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="message-input" placeholder="Напишите сообщение..." onkeydown="if(event.key==='Enter') sendMessage()">
+          <button class="btn-primary" style="width: auto; padding: 0 20px; margin-top: 10px;" onclick="sendMessage()">➤</button>
+        </div>
       </div>
+    </div>
+
+    <!-- Вкладка Мой Профиль -->
+    <div id="tab-profile" class="hidden">
+      <h2>Мой Профиль</h2>
+      <div class="profile-card">
+        <p>👤 <strong>Никнейм:</strong> <span id="profile-username">-</span></p>
+        <p>📧 <strong>Email:</strong> <span id="profile-email">-</span></p>
+        <p>🆔 <strong>ID аккаунта:</strong> <br><small id="profile-id" style="word-break: break-all; color:#777;">-</small></p>
+      </div>
+      <button class="btn-danger" onclick="logout()">Выйти из аккаунта</button>
     </div>
   </div>
 
@@ -69,12 +99,12 @@
     const SUPABASE_URL = "https://pgnmaoybgwesqctysveu.supabase.co";
     const SUPABASE_KEY = "sb_publishable_TSFvhqldPDdWGncB92rVag_KkdkwlZP";
 
-    // Инициализация базы
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let currentUser = null;
     let currentProfile = null;
     let activeChatUser = null;
+    let searchTimer = null;
 
     // Регистрация
     async function register() {
@@ -90,16 +120,12 @@
 
         currentUser = data.user;
 
-        // Автоматический вход
         if (!data.session) {
           const { data: signInData, error: signInErr } = await db.auth.signInWithPassword({ email, password });
-          if (signInErr) {
-            return alert('Регистрация успешна! Теперь выключите подтверждение Email в настройках Supabase или войдите.');
-          }
+          if (signInErr) return alert('Регистрация успешна! Войдите в аккаунт.');
           currentUser = signInData.user;
         }
 
-        // Сохраняем никнейм
         await db.from('profiles').insert([{ id: currentUser.id, username: username }]);
 
         alert('Успешная регистрация!');
@@ -134,13 +160,26 @@
 
       const { data } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
       currentProfile = data;
-      document.getElementById('my-name').innerText = currentProfile ? currentProfile.username : 'Пользователь';
+
+      // Заполняем данные профиля
+      document.getElementById('profile-username').innerText = currentProfile ? currentProfile.username : 'Не указан';
+      document.getElementById('profile-email').innerText = currentUser.email || 'Не указан';
+      document.getElementById('profile-id').innerText = currentUser.id;
 
       subscribeToRealtime();
     }
 
-    // Поиск пользователей
-    async function searchUsers() {
+    // Переключение вкладок (Чаты / Профиль)
+    function switchTab(tab) {
+      document.getElementById('tab-chats').classList.toggle('hidden', tab !== 'chats');
+      document.getElementById('tab-profile').classList.toggle('hidden', tab !== 'profile');
+      document.getElementById('tab-chats-btn').classList.toggle('active', tab === 'chats');
+      document.getElementById('tab-profile-btn').classList.toggle('active', tab === 'profile');
+    }
+
+    // Быстрый и мгновенный поиск
+    function searchUsersFast() {
+      clearTimeout(searchTimer);
       const query = document.getElementById('search').value.trim().toLowerCase();
       const list = document.getElementById('users-list');
 
@@ -150,27 +189,29 @@
         return; 
       }
 
-      const { data, error } = await db
-        .from('profiles')
-        .select('*')
-        .neq('id', currentUser.id)
-        .ilike('username', `%${query}%`);
+      searchTimer = setTimeout(async () => {
+        const { data, error } = await db
+          .from('profiles')
+          .select('*')
+          .neq('id', currentUser.id)
+          .ilike('username', `${query}%`); // Быстрый поиск с первых букв!
 
-      if (error || !data || data.length === 0) {
-        list.innerHTML = '<div style="padding:10px; color:#888; text-align:center;">Пользователь не найден</div>';
+        if (error || !data || data.length === 0) {
+          list.innerHTML = '<div style="padding:10px; color:#888; text-align:center;">Пользователь не найден</div>';
+          list.classList.remove('hidden');
+          return;
+        }
+
+        list.innerHTML = '';
         list.classList.remove('hidden');
-        return;
-      }
-
-      list.innerHTML = '';
-      list.classList.remove('hidden');
-      data.forEach(user => {
-        const div = document.createElement('div');
-        div.className = 'user-item';
-        div.innerHTML = `<span>👤 <b>${user.username}</b></span> <small style="color:#1877f2;">Написать</small>`;
-        div.onclick = () => openChat(user);
-        list.appendChild(div);
-      });
+        data.forEach(user => {
+          const div = document.createElement('div');
+          div.className = 'user-item';
+          div.innerHTML = `<span>👤 <b>${user.username}</b></span> <small style="color:#1877f2; font-weight:bold;">Написать 💬</small>`;
+          div.onclick = () => openChat(user);
+          list.appendChild(div);
+        });
+      }, 50);
     }
 
     // Открыть чат
@@ -180,6 +221,12 @@
       document.getElementById('chat-wrapper').classList.remove('hidden');
       document.getElementById('chat-target-name').innerText = user.username;
       loadMessages();
+    }
+
+    // Закрыть чат
+    function closeChat() {
+      activeChatUser = null;
+      document.getElementById('chat-wrapper').classList.add('hidden');
     }
 
     // Загрузить сообщения
@@ -221,7 +268,7 @@
       loadMessages();
     }
 
-    // Подписка на сообщения
+    // Подписка на сообщения в реальном времени
     function subscribeToRealtime() {
       db.channel('public:messages')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
@@ -229,6 +276,12 @@
             loadMessages();
           }
         }).subscribe();
+    }
+
+    // Выход из аккаунта
+    async function logout() {
+      await db.auth.signOut();
+      location.reload();
     }
   </script>
 </body>
