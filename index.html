@@ -20,7 +20,6 @@
     .btn-secondary:hover { background: #36a420; }
     .hidden { display: none !important; }
     
-    /* Списки и чат */
     .user-list { margin-top: 10px; max-height: 180px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; }
     .user-item { padding: 10px 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
     .user-item:hover { background: #f0f2f5; }
@@ -65,12 +64,13 @@
 
   <script>
     // ====================================================
-    // ВСТАВЬТЕ СВОИ ДАННЫЕ ИЗ SUPABASE (PROJECT SETTINGS -> API)
+    // ВСТАВЬТЕ СВОИ КЛЮЧИ ИЗ SUPABASE СНИЗУ
     // ====================================================
     const SUPABASE_URL = "https://pgnmaoybgwesqctysveu.supabase.co";
     const SUPABASE_KEY = "sb_publishable_TSFvhqldPDdWGncB92rVag_KkdkwlZP";
 
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Инициализация базы
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let currentUser = null;
     let currentProfile = null;
@@ -78,37 +78,53 @@
 
     // Регистрация
     async function register() {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const username = document.getElementById('username').value.trim();
+      try {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const username = document.getElementById('username').value.trim();
 
-      if (!username || !email || !password) return alert('Заполните все поля!');
+        if (!username || !email || !password) return alert('Заполните все поля!');
 
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error) return alert('Ошибка: ' + error.message);
+        const { data, error } = await db.auth.signUp({ email, password });
+        if (error) return alert('Ошибка регистрации: ' + error.message);
 
-      currentUser = data.user;
-      
-      // Сохраняем никнейм в таблицу profiles
-      const { error: profileError } = await supabase.from('profiles').insert([{ id: currentUser.id, username: username }]);
-      if (profileError) return alert('Ошибка создания профиля: ' + profileError.message);
+        currentUser = data.user;
 
-      alert('Регистрация успешна!');
-      initApp();
+        // Автоматический вход
+        if (!data.session) {
+          const { data: signInData, error: signInErr } = await db.auth.signInWithPassword({ email, password });
+          if (signInErr) {
+            return alert('Регистрация успешна! Теперь выключите подтверждение Email в настройках Supabase или войдите.');
+          }
+          currentUser = signInData.user;
+        }
+
+        // Сохраняем никнейм
+        await db.from('profiles').insert([{ id: currentUser.id, username: username }]);
+
+        alert('Успешная регистрация!');
+        initApp();
+      } catch (e) {
+        alert('Ошибка: ' + e.message);
+      }
     }
 
     // Вход
     async function login() {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
+      try {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
 
-      if (!email || !password) return alert('Заполните Email и Пароль!');
+        if (!email || !password) return alert('Заполните Email и Пароль!');
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) return alert('Ошибка входа: ' + error.message);
+        const { data, error } = await db.auth.signInWithPassword({ email, password });
+        if (error) return alert('Ошибка входа: ' + error.message);
 
-      currentUser = data.user;
-      initApp();
+        currentUser = data.user;
+        initApp();
+      } catch (e) {
+        alert('Ошибка: ' + e.message);
+      }
     }
 
     // Инициализация
@@ -116,7 +132,7 @@
       document.getElementById('auth-section').classList.add('hidden');
       document.getElementById('app-section').classList.remove('hidden');
 
-      const { data } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+      const { data } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
       currentProfile = data;
       document.getElementById('my-name').innerText = currentProfile ? currentProfile.username : 'Пользователь';
 
@@ -134,7 +150,7 @@
         return; 
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('profiles')
         .select('*')
         .neq('id', currentUser.id)
@@ -157,7 +173,7 @@
       });
     }
 
-    // Открыть чат с человеком
+    // Открыть чат
     function openChat(user) {
       activeChatUser = user;
       document.getElementById('users-list').classList.add('hidden');
@@ -166,10 +182,10 @@
       loadMessages();
     }
 
-    // Загрузить историю сообщений
+    // Загрузить сообщения
     async function loadMessages() {
       if (!activeChatUser) return;
-      const { data } = await supabase
+      const { data } = await db
         .from('messages')
         .select('*')
         .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeChatUser.id}),and(sender_id.eq.${activeChatUser.id},receiver_id.eq.${currentUser.id})`)
@@ -196,7 +212,7 @@
 
       input.value = '';
 
-      await supabase.from('messages').insert([{
+      await db.from('messages').insert([{
         sender_id: currentUser.id,
         receiver_id: activeChatUser.id,
         content: text
@@ -205,9 +221,9 @@
       loadMessages();
     }
 
-    // Подписка на сообщения в реальном времени
+    // Подписка на сообщения
     function subscribeToRealtime() {
-      supabase.channel('public:messages')
+      db.channel('public:messages')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
           if (activeChatUser && (payload.new.sender_id === activeChatUser.id || payload.new.sender_id === currentUser.id)) {
             loadMessages();
