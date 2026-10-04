@@ -63,7 +63,7 @@
 
     <!-- Вкладка Поиска и Чата -->
     <div id="tab-chats">
-      <input type="text" id="search" placeholder="🔍 Начните вводить никнейм..." oninput="searchUsersFast()">
+      <input type="text" id="search" placeholder="🔍 Введите никнейм..." oninput="searchUsersFast()">
       <div id="users-list" class="user-list hidden"></div>
 
       <!-- Чат -->
@@ -93,7 +93,6 @@
   </div>
 
   <script>
-    // Подключение вашей базы Supabase
     const SUPABASE_URL = "https://pgnmaoybgwesqctysveu.supabase.co";
     const SUPABASE_KEY = "sb_publishable_TSFvhqldPDdWGncB92rVag_KkdkwlZP";
 
@@ -102,7 +101,6 @@
     let currentUser = null;
     let currentProfile = null;
     let activeChatUser = null;
-    let searchTimer = null;
 
     // Регистрация
     async function register() {
@@ -113,18 +111,22 @@
 
         if (!username || !email || !password) return alert('Заполните все поля!');
 
-        const { data, error } = await db.auth.signUp({ email, password });
+        // 1. Создаем пользователя
+        const { data, error } = await db.auth.signUp({ 
+          email, 
+          password,
+          options: { data: { username: username } }
+        });
         if (error) return alert('Ошибка регистрации: ' + error.message);
 
-        currentUser = data.user;
+        // 2. Выполняем вход
+        const { data: signInData, error: signInErr } = await db.auth.signInWithPassword({ email, password });
+        if (signInErr) return alert('Ошибка авторизации: ' + signInErr.message);
 
-        if (!data.session) {
-          const { data: signInData, error: signInErr } = await db.auth.signInWithPassword({ email, password });
-          if (signInErr) return alert('Регистрация успешна! Войдите в аккаунт.');
-          currentUser = signInData.user;
-        }
+        currentUser = signInData.user;
 
-        await db.from('profiles').insert([{ id: currentUser.id, username: username }]);
+        // 3. Сохраняем профиль
+        await db.from('profiles').upsert([{ id: currentUser.id, username: username }]);
 
         alert('Успешная регистрация!');
         initApp();
@@ -156,18 +158,26 @@
       document.getElementById('auth-section').classList.add('hidden');
       document.getElementById('app-section').classList.remove('hidden');
 
-      const { data } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
+      // Получаем или автоматически восстанавливаем профиль
+      let { data } = await db.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+
+      if (!data) {
+        const fallbackName = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
+        await db.from('profiles').upsert([{ id: currentUser.id, username: fallbackName }]);
+        const res = await db.from('profiles').select('*').eq('id', currentUser.id).single();
+        data = res.data;
+      }
+
       currentProfile = data;
 
-      // Заполняем данные профиля
-      document.getElementById('profile-username').innerText = currentProfile ? currentProfile.username : 'Не указан';
-      document.getElementById('profile-email').innerText = currentUser.email || 'Не указан';
+      document.getElementById('profile-username').innerText = currentProfile ? currentProfile.username : 'Пользователь';
+      document.getElementById('profile-email').innerText = currentUser.email || '-';
       document.getElementById('profile-id').innerText = currentUser.id;
 
       subscribeToRealtime();
     }
 
-    // Переключение вкладок (Чаты / Профиль)
+    // Переключение вкладок
     function switchTab(tab) {
       document.getElementById('tab-chats').classList.toggle('hidden', tab !== 'chats');
       document.getElementById('tab-profile').classList.toggle('hidden', tab !== 'profile');
@@ -175,10 +185,9 @@
       document.getElementById('tab-profile-btn').classList.toggle('active', tab === 'profile');
     }
 
-    // Быстрый и мгновенный поиск
-    function searchUsersFast() {
-      clearTimeout(searchTimer);
-      const query = document.getElementById('search').value.trim().toLowerCase();
+    // Быстрый поиск
+    async function searchUsersFast() {
+      const query = document.getElementById('search').value.trim();
       const list = document.getElementById('users-list');
 
       if (!query) { 
@@ -187,29 +196,27 @@
         return; 
       }
 
-      searchTimer = setTimeout(async () => {
-        const { data, error } = await db
-          .from('profiles')
-          .select('*')
-          .neq('id', currentUser.id)
-          .ilike('username', `${query}%`);
+      const { data, error } = await db
+        .from('profiles')
+        .select('*')
+        .neq('id', currentUser.id)
+        .ilike('username', `%${query}%`);
 
-        if (error || !data || data.length === 0) {
-          list.innerHTML = '<div style="padding:10px; color:#888; text-align:center;">Пользователь не найден</div>';
-          list.classList.remove('hidden');
-          return;
-        }
-
-        list.innerHTML = '';
+      if (error || !data || data.length === 0) {
+        list.innerHTML = '<div style="padding:10px; color:#888; text-align:center;">Пользователь не найден</div>';
         list.classList.remove('hidden');
-        data.forEach(user => {
-          const div = document.createElement('div');
-          div.className = 'user-item';
-          div.innerHTML = `<span>👤 <b>${user.username}</b></span> <small style="color:#1877f2; font-weight:bold;">Написать 💬</small>`;
-          div.onclick = () => openChat(user);
-          list.appendChild(div);
-        });
-      }, 50);
+        return;
+      }
+
+      list.innerHTML = '';
+      list.classList.remove('hidden');
+      data.forEach(user => {
+        const div = document.createElement('div');
+        div.className = 'user-item';
+        div.innerHTML = `<span>👤 <b>${user.username}</b></span> <small style="color:#1877f2; font-weight:bold;">Написать 💬</small>`;
+        div.onclick = () => openChat(user);
+        list.appendChild(div);
+      });
     }
 
     // Открыть чат
@@ -240,7 +247,8 @@
       chatBox.innerHTML = '';
       if (data) {
         data.forEach(msg => {
-          const div = document.className = `msg ${msg.sender_id === currentUser.id ? 'my' : 'their'}`;
+          const div = document.createElement('div');
+          div.className = `msg ${msg.sender_id === currentUser.id ? 'my' : 'their'}`;
           div.innerText = msg.content;
           chatBox.appendChild(div);
         });
