@@ -2,8 +2,8 @@
 <html lang="ru" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Social Chat Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Social Chat Mobile</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
@@ -57,152 +57,179 @@
       --modal-bg: rgba(0, 20, 0, 0.85);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; transition: background-color 0.2s, color 0.2s; }
-    body, html { height: 100%; width: 100%; background-color: var(--bg); color: var(--text); overflow: hidden; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; height: 100dvh; width: 100%; background-color: var(--bg); color: var(--text); overflow: hidden; }
 
-    /* Полноэкранный контейнер */
-    .app-container { display: flex; flex-direction: column; height: 100vh; width: 100vw; max-width: 900px; margin: 0 auto; background: var(--surface); border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+    /* Главный мобильный контейнер */
+    .app-container { display: flex; flex-direction: column; height: 100%; height: 100dvh; max-width: 500px; margin: 0 auto; background: var(--surface); position: relative; }
 
-    /* Панель Навигации */
-    .nav-bar { display: flex; justify-content: space-around; background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 0; }
-    .nav-item { background: transparent; border: none; color: var(--subtext); font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .nav-item.active { color: var(--primary); background: var(--input-bg); }
+    /* Шапка приложения */
+    .app-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface); }
+    .app-header h2 { font-size: 18px; font-weight: 700; color: var(--primary); }
 
-    /* Вкладки Контента */
-    .view-content { flex: 1; overflow-y: auto; padding: 20px; display: none; }
-    .view-content.active { display: flex; flex-direction: column; }
+    /* Нижняя навигационная панель */
+    .nav-bar { display: flex; justify-content: space-around; background: var(--surface); border-top: 1px solid var(--border); padding: 6px 0; padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+    .nav-item { background: transparent; border: none; color: var(--subtext); font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
+    .nav-item.active { color: var(--primary); }
+    .nav-item span { font-size: 10px; }
 
-    /* Чат */
-    .chat-messages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 12px; background: var(--bg); border-radius: 12px; }
-    .msg-group { display: flex; flex-direction: column; max-width: 75%; }
+    /* Область содержимого */
+    .view-content { flex: 1; overflow-y: auto; padding: 14px; display: none; flex-direction: column; }
+    .view-content.active { display: flex; }
+
+    /* Элементы чата */
+    .chat-messages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); border-radius: 12px; margin-bottom: 10px; }
+    .msg-group { display: flex; flex-direction: column; max-width: 80%; }
     .msg-group.my { align-self: flex-end; align-items: flex-end; }
     .msg-group.their { align-self: flex-start; align-items: flex-start; }
-    .msg-meta { font-size: 11px; color: var(--subtext); margin-bottom: 3px; font-weight: 600; }
-    .msg-bubble { padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.4; word-break: break-word; }
-    .msg-group.my .msg-bubble { background: var(--msg-my); color: var(--msg-my-text); border-bottom-right-radius: 4px; }
-    .msg-group.their .msg-bubble { background: var(--msg-their); color: var(--msg-their-text); border-bottom-left-radius: 4px; }
+    .msg-meta { font-size: 10px; color: var(--subtext); margin-bottom: 2px; font-weight: 600; }
+    .msg-bubble { padding: 8px 12px; border-radius: 14px; font-size: 14px; line-height: 1.35; word-break: break-word; }
+    .msg-group.my .msg-bubble { background: var(--msg-my); color: var(--msg-my-text); border-bottom-right-radius: 2px; }
+    .msg-group.their .msg-bubble { background: var(--msg-their); color: var(--msg-their-text); border-bottom-left-radius: 2px; }
 
-    .input-bar { padding: 12px 0 0 0; display: flex; gap: 10px; }
-    .input-bar input, .custom-input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); outline: none; font-size: 14px; }
+    .input-bar { display: flex; gap: 8px; }
+    .input-bar input, .custom-input { flex: 1; padding: 10px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); outline: none; font-size: 14px; }
     
-    .btn { padding: 10px 18px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; background: var(--primary); color: white; }
+    .btn { padding: 8px 14px; border-radius: 18px; border: none; font-weight: 600; cursor: pointer; background: var(--primary); color: white; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
     .btn-secondary { background: #10b981; }
     .btn-danger { background: #ef4444; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 12px; }
 
-    /* Карточка Профиля и Карточки Поиска */
-    .user-card { display: flex; align-items: center; justify-content: space-between; background: var(--surface); padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 10px; }
-    .user-info-block { display: flex; align-items: center; gap: 12px; }
-    .avatar-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
+    /* Карточки пользователей */
+    .user-card { display: flex; align-items: center; justify-content: space-between; background: var(--surface); padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 8px; }
+    .user-info-block { display: flex; align-items: center; gap: 10px; }
+    .avatar-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
 
     /* Модальное окно */
-    .modal-backdrop { position: fixed; inset: 0; background: var(--modal-bg); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-    .modal { background: var(--surface); padding: 24px; border-radius: 20px; width: 100%; max-width: 420px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+    .modal-backdrop { position: fixed; inset: 0; background: var(--modal-bg); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+    .modal { background: var(--surface); padding: 20px; border-radius: 16px; width: 100%; max-width: 380px; border: 1px solid var(--border); box-shadow: var(--shadow); }
 
     .hidden { display: none !important; }
-    .auth-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 500; padding: 20px; }
-    .auth-card { background: var(--surface); padding: 32px; border-radius: 20px; width: 100%; max-width: 380px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+    .auth-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 500; padding: 16px; }
+    .auth-card { background: var(--surface); padding: 24px; border-radius: 16px; width: 100%; max-width: 360px; border: 1px solid var(--border); box-shadow: var(--shadow); }
   </style>
 </head>
 <body>
 
-  <!-- Экран Входа / Регистрации -->
+  <!-- Авторизация -->
   <div id="auth-section" class="auth-overlay">
     <div class="auth-card">
-      <h2 style="text-align: center; margin-bottom: 12px;">Facebook Lite</h2>
-      <div style="display: flex; gap: 6px; margin-bottom: 16px;">
+      <h2 style="text-align: center; margin-bottom: 12px; color: var(--primary);">Facebook Mobile</h2>
+      <div style="display: flex; gap: 6px; margin-bottom: 14px;">
         <button id="tab-login-btn" class="btn" style="flex:1;" onclick="switchAuthTab('login')">Вход</button>
         <button id="tab-reg-btn" class="btn" style="flex:1; background: var(--input-bg); color: var(--text);" onclick="switchAuthTab('reg')">Регистрация</button>
       </div>
 
       <div id="login-form">
-        <input type="email" id="login-email" class="custom-input" placeholder="Email" style="width: 100%; margin-bottom: 10px;">
-        <input type="password" id="login-password" class="custom-input" placeholder="Пароль" style="width: 100%; margin-bottom: 10px;">
-        <button class="btn" style="width: 100%;" onclick="login()">Войти</button>
+        <input type="email" id="login-email" class="custom-input" placeholder="Email" style="width: 100%; margin-bottom: 8px;">
+        <input type="password" id="login-password" class="custom-input" placeholder="Пароль" style="width: 100%; margin-bottom: 8px;">
+        <button class="btn" style="width: 100%; border-radius: 10px;" onclick="login()">Войти</button>
       </div>
 
       <div id="reg-form" class="hidden">
-        <input type="text" id="reg-username" class="custom-input" placeholder="Никнейм / Имя" style="width: 100%; margin-bottom: 10px;">
-        <input type="email" id="reg-email" class="custom-input" placeholder="Email" style="width: 100%; margin-bottom: 10px;">
-        <input type="password" id="reg-password" class="custom-input" placeholder="Пароль (мин. 6)" style="width: 100%; margin-bottom: 10px;">
-        <button class="btn btn-secondary" style="width: 100%;" onclick="register()">Создать аккаунт</button>
+        <input type="text" id="reg-username" class="custom-input" placeholder="Имя / Никнейм" style="width: 100%; margin-bottom: 8px;">
+        <input type="email" id="reg-email" class="custom-input" placeholder="Email" style="width: 100%; margin-bottom: 8px;">
+        <input type="password" id="reg-password" class="custom-input" placeholder="Пароль (мин. 6)" style="width: 100%; margin-bottom: 8px;">
+        <button class="btn btn-secondary" style="width: 100%; border-radius: 10px;" onclick="register()">Зарегистрироваться</button>
       </div>
     </div>
   </div>
 
-  <!-- Главный Полноэкранный Интерфейс -->
+  <!-- Главный Интерфейс -->
   <div id="app-section" class="app-container hidden">
-    <!-- Шапка Навигации -->
-    <div class="nav-bar">
-      <button class="nav-item active" onclick="switchView('chat', this)">💬<span>Чат</span></button>
-      <button class="nav-item" onclick="switchView('search', this)">🔍<span>Поиск</span></button>
-      <button class="nav-item" onclick="switchView('friends', this)">👥<span>Друзья</span></button>
-      <button class="nav-item" onclick="switchView('profile', this)">👤<span>Профиль</span></button>
-      <button class="nav-item" onclick="openSettings()">⚙️<span>Опции</span></button>
+    <!-- Шапка -->
+    <div class="app-header">
+      <h2 id="header-title">💬 Общий Чат</h2>
+      <button class="btn btn-sm" style="background:var(--input-bg); color:var(--text);" onclick="openSettings()">⚙️</button>
     </div>
 
-    <!-- Вкладка 1: ЧАТ -->
+    <!-- Вкладка 1: ОБЩИЙ ЧАТ -->
     <div id="view-chat" class="view-content active">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-size: 12px; color: var(--subtext); font-weight: 600;">Публичные сообщения</span>
+        <button class="btn btn-danger btn-sm" onclick="clearGeneralChatHistory()">🗑️ Очистить</button>
+      </div>
       <div id="chat-box" class="chat-messages"></div>
       <div class="input-bar">
-        <input type="text" id="message-input" placeholder="Напишите сообщение..." onkeydown="if(event.key==='Enter') sendMessage()">
+        <input type="text" id="message-input" placeholder="Сообщение..." onkeydown="if(event.key==='Enter') sendMessage()">
         <button class="btn" onclick="sendMessage()">➤</button>
       </div>
     </div>
 
-    <!-- Вкладка 2: ПОИСК ПОЛЬЗОВАТЕЛЕЙ -->
+    <!-- Вкладка 2: ЛИЧНЫЕ СООБЩЕНИЯ (ЛС) -->
+    <div id="view-dm" class="view-content">
+      <div id="dm-select-screen">
+        <h3 style="margin-bottom: 10px;">Выберите друга для чата:</h3>
+        <div id="dm-friends-list"></div>
+      </div>
+
+      <div id="dm-chat-screen" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <button class="btn btn-sm" style="background:var(--input-bg);color:var(--text);" onclick="closeDmChat()">← Назад</button>
+          <b id="dm-partner-name">---</b>
+          <button class="btn btn-danger btn-sm" onclick="clearDmHistory()">🗑️</button>
+        </div>
+        <div id="dm-chat-box" class="chat-messages"></div>
+        <div class="input-bar">
+          <input type="text" id="dm-message-input" placeholder="Личное сообщение..." onkeydown="if(event.key==='Enter') sendDmMessage()">
+          <button class="btn" onclick="sendDmMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Вкладка 3: ПОИСК ПОЛЬЗОВАТЕЛЕЙ -->
     <div id="view-search" class="view-content">
-      <h3 style="margin-bottom: 12px;">Поиск людей</h3>
-      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-        <input type="text" id="search-input" class="custom-input" placeholder="Введите имя или никнейм..." onkeydown="if(event.key==='Enter') searchUsers()">
+      <div style="display: flex; gap: 6px; margin-bottom: 12px;">
+        <input type="text" id="search-input" class="custom-input" placeholder="Поиск по имени или нику..." onkeydown="if(event.key==='Enter') searchUsers()">
         <button class="btn" onclick="searchUsers()">Искать</button>
       </div>
       <div id="search-results"></div>
     </div>
 
-    <!-- Вкладка 3: ДРУЗЬЯ И ЗАЯВКИ -->
+    <!-- Вкладка 4: ДРУЗЬЯ -->
     <div id="view-friends" class="view-content">
-      <h3 style="margin-bottom: 10px;">Входящие заявки</h3>
-      <div id="incoming-requests" style="margin-bottom: 24px;"></div>
+      <h3 style="margin-bottom: 8px; font-size:15px;">Входящие заявки</h3>
+      <div id="incoming-requests" style="margin-bottom: 16px;"></div>
 
-      <h3 style="margin-bottom: 10px;">Мои друзья</h3>
+      <h3 style="margin-bottom: 8px; font-size:15px;">Мои друзья</h3>
       <div id="friends-list"></div>
     </div>
 
-    <!-- Вкладка 4: ПРОФИЛЬ -->
+    <!-- Вкладка 5: ПРОФИЛЬ -->
     <div id="view-profile" class="view-content">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <div id="profile-avatar-display" class="avatar-img" style="width: 90px; height: 90px; font-size: 36px; margin: 0 auto 12px auto;">?</div>
-        <h2 id="profile-name-display">Имя Фамилия</h2>
-        <p id="profile-bio-display" style="color: var(--subtext); font-size: 14px; margin-top: 4px;">---</p>
+      <div style="text-align: center; margin-bottom: 16px;">
+        <div id="profile-avatar-display" class="avatar-img" style="width: 72px; height: 72px; font-size: 28px; margin: 0 auto 8px auto;">?</div>
+        <h3 id="profile-name-display">Имя Фамилия</h3>
+        <p id="profile-bio-display" style="color: var(--subtext); font-size: 13px; margin-top: 2px;">---</p>
       </div>
 
-      <div style="background: var(--input-bg); padding: 16px; border-radius: 12px;">
-        <h4 style="margin-bottom: 10px;">Редактировать профиль</h4>
-        <input type="text" id="edit-fullname" class="custom-input" placeholder="Полное Имя" style="width: 100%; margin-bottom: 10px;">
-        <input type="text" id="edit-avatar" class="custom-input" placeholder="Ссылка на фото аватара (URL)" style="width: 100%; margin-bottom: 10px;">
-        <textarea id="edit-bio" class="custom-input" placeholder="О себе..." style="width: 100%; height: 70px; margin-bottom: 10px;"></textarea>
-        <button class="btn" style="width: 100%;" onclick="saveProfile()">Сохранить изменения</button>
+      <div style="background: var(--input-bg); padding: 12px; border-radius: 12px;">
+        <h4 style="margin-bottom: 8px; font-size: 14px;">Редактировать профиль</h4>
+        <input type="text" id="edit-fullname" class="custom-input" placeholder="Полное Имя" style="width: 100%; margin-bottom: 8px;">
+        <input type="text" id="edit-avatar" class="custom-input" placeholder="Ссылка на фото (URL)" style="width: 100%; margin-bottom: 8px;">
+        <textarea id="edit-bio" class="custom-input" placeholder="О себе..." style="width: 100%; height: 60px; margin-bottom: 8px;"></textarea>
+        <button class="btn" style="width: 100%; border-radius: 10px;" onclick="saveProfile()">Сохранить</button>
       </div>
+    </div>
+
+    <!-- Навигация Внизу -->
+    <div class="nav-bar">
+      <button class="nav-item active" onclick="switchView('chat', this, '💬 Общий Чат')">💬<span>Чат</span></button>
+      <button class="nav-item" onclick="switchView('dm', this, '✉️ Личные сообщения')">✉️<span>ЛС</span></button>
+      <button class="nav-item" onclick="switchView('search', this, '🔍 Поиск людей')">🔍<span>Поиск</span></button>
+      <button class="nav-item" onclick="switchView('friends', this, '👥 Мои Друзья')">👥<span>Друзья</span></button>
+      <button class="nav-item" onclick="switchView('profile', this, '👤 Мой Профиль')">👤<span>Профиль</span></button>
     </div>
   </div>
 
   <!-- Модальное окно Настроек -->
   <div id="settings-modal" class="modal-backdrop hidden">
     <div class="modal">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h3>⚙️ Настройки</h3>
-        <button class="btn" onclick="closeSettings()" style="padding: 4px 10px;">✕</button>
+        <button class="btn btn-sm" onclick="closeSettings()">✕</button>
       </div>
-      <button class="btn" onclick="toggleTheme()" style="width: 100%; margin-bottom: 10px;">☀️ / 🌙 Сменить тему</button>
-      
-      <details style="margin-bottom: 16px;">
-        <summary style="cursor: pointer; color: var(--subtext); font-size: 13px;">🔒 Секретный консольный режим</summary>
-        <div style="margin-top: 8px;">
-          <input type="text" id="cheat-code-input" class="custom-input" placeholder="Введите чит-код..." style="width: 100%; margin-bottom: 6px;">
-          <button class="btn" style="width: 100%;" onclick="applyCheatCode()">Применить</button>
-        </div>
-      </details>
-
+      <button class="btn" onclick="toggleTheme()" style="width: 100%; margin-bottom: 12px; background:var(--input-bg); color:var(--text);">☀️ / 🌙 Сменить тему</button>
       <button class="btn btn-danger" style="width: 100%;" onclick="logout()">🚪 Выйти из аккаунта</button>
     </div>
   </div>
@@ -214,8 +241,9 @@
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let currentUser = null;
     let myProfileData = null;
+    let activeDmPartner = null;
 
-    // --- Управление Темой ---
+    // --- Переключение Темы ---
     let currentTheme = localStorage.getItem('chat_theme') || 'light';
     applyTheme(currentTheme);
 
@@ -229,7 +257,7 @@
       applyTheme(currentTheme === 'light' ? 'dark' : 'light');
     }
 
-    // --- Состояние Авторизации ---
+    // --- Авторизация ---
     db.auth.onAuthStateChange((event, session) => {
       if (session) {
         currentUser = session.user;
@@ -241,13 +269,8 @@
     });
 
     function switchAuthTab(type) {
-      if (type === 'login') {
-        document.getElementById('login-form').classList.remove('hidden');
-        document.getElementById('reg-form').classList.add('hidden');
-      } else {
-        document.getElementById('login-form').classList.add('hidden');
-        document.getElementById('reg-form').classList.remove('hidden');
-      }
+      document.getElementById('login-form').classList.toggle('hidden', type !== 'login');
+      document.getElementById('reg-form').classList.toggle('hidden', type !== 'reg');
     }
 
     async function login() {
@@ -269,7 +292,7 @@
         email, password, options: { data: { username: username } }
       });
 
-      if (error) return alert('Ошибка регистрации: ' + error.message);
+      if (error) return alert('Ошибка: ' + error.message);
       await db.auth.signInWithPassword({ email, password });
     }
 
@@ -291,23 +314,25 @@
       document.getElementById('app-section').classList.add('hidden');
     }
 
-    // --- Переключение Вкладок ---
-    function switchView(viewName, btn) {
+    // --- Навигация ---
+    function switchView(viewName, btn, title) {
       document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
       document.getElementById(`view-${viewName}`).classList.add('active');
       if (btn) btn.classList.add('active');
+      if (title) document.getElementById('header-title').innerText = title;
 
       if (viewName === 'friends') loadFriendsAndRequests();
+      if (viewName === 'search') searchUsers();
+      if (viewName === 'dm') loadDmFriends();
     }
 
     // --- ПРОФИЛЬ ---
     async function loadMyProfile() {
-      let { data, error } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
+      let { data } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
       
       if (!data) {
-        // Если профиль не создался автоматически
         const defaultName = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
         await db.from('profiles').insert([{ id: currentUser.id, username: defaultName, full_name: defaultName }]);
         data = { id: currentUser.id, username: defaultName, full_name: defaultName };
@@ -336,28 +361,28 @@
 
       const { error } = await db.from('profiles').update({ full_name, avatar_url, bio }).eq('id', currentUser.id);
 
-      if (error) alert('Ошибка сохранения: ' + error.message);
+      if (error) alert('Ошибка: ' + error.message);
       else {
-        alert('Профиль обновлен!');
+        alert('Профиль сохранен!');
         loadMyProfile();
       }
     }
 
-    // --- ПОИСК И ДОБАВЛЕНИЕ В ДРУЗЬЯ ---
+    // --- ПОИСК ЛЮДЕЙ ---
     async function searchUsers() {
       const query = document.getElementById('search-input').value.trim();
-      if (!query) return;
+      let req = db.from('profiles').select('*').neq('id', currentUser.id);
 
-      const { data, error } = await db.from('profiles')
-        .select('*')
-        .ilike('username', `%${query}%`)
-        .neq('id', currentUser.id);
+      if (query) {
+        req = req.or(`username.ilike.%${query}%,full_name.ilike.%${query}%`);
+      }
 
+      const { data, error } = await req.limit(30);
       const container = document.getElementById('search-results');
       container.innerHTML = '';
 
       if (!data || data.length === 0) {
-        container.innerHTML = '<p style="color:var(--subtext);">Никого не найдено</p>';
+        container.innerHTML = '<p style="color:var(--subtext); text-align:center; margin-top:20px;">Ничего не найдено</p>';
         return;
       }
 
@@ -369,10 +394,13 @@
             <div class="avatar-img">${user.avatar_url ? `<img src="${user.avatar_url}" style="width:100%;height:100%;border-radius:50%;">` : user.username.charAt(0).toUpperCase()}</div>
             <div>
               <b>${escapeHtml(user.full_name || user.username)}</b>
-              <p style="font-size:12px;color:var(--subtext);">@${escapeHtml(user.username)}</p>
+              <p style="font-size:11px;color:var(--subtext);">@${escapeHtml(user.username)}</p>
             </div>
           </div>
-          <button class="btn" style="font-size:12px;" onclick="sendFriendRequest('${user.id}', this)">+ В друзья</button>
+          <div style="display:flex; gap:4px;">
+            <button class="btn btn-sm" onclick="sendFriendRequest('${user.id}', this)">+ Друг</button>
+            <button class="btn btn-sm btn-secondary" onclick="openDmWith('${user.id}', '${escapeHtml(user.full_name || user.username)}')">💬</button>
+          </div>
         `;
         container.appendChild(div);
       });
@@ -386,17 +414,15 @@
       }]);
 
       if (error) {
-        alert('Заявка уже отправлена или произошла ошибка!');
+        alert('Заявка уже отправлена!');
       } else {
-        btn.innerText = 'Заявка отправлена';
+        btn.innerText = 'Отправлено';
         btn.disabled = true;
-        btn.style.opacity = '0.6';
       }
     }
 
-    // --- ДРУЗЬЯ И ВХОДЯЩИЕ ЗАЯВКИ ---
+    // --- ДРУЗЬЯ ---
     async function loadFriendsAndRequests() {
-      // 1. Загрузка входящих заявок
       const { data: requests } = await db.from('friendships')
         .select('id, sender_id, profiles!friendships_sender_id_fkey(*)')
         .eq('receiver_id', currentUser.id)
@@ -406,7 +432,7 @@
       reqBox.innerHTML = '';
 
       if (!requests || requests.length === 0) {
-        reqBox.innerHTML = '<p style="color:var(--subtext);font-size:13px;">Нет новых заявок</p>';
+        reqBox.innerHTML = '<p style="color:var(--subtext);font-size:12px;">Нет новых заявок</p>';
       } else {
         requests.forEach(r => {
           const u = r.profiles;
@@ -417,16 +443,15 @@
               <div class="avatar-img">${u.avatar_url ? `<img src="${u.avatar_url}" style="width:100%;height:100%;border-radius:50%;">` : u.username.charAt(0).toUpperCase()}</div>
               <div><b>${escapeHtml(u.full_name || u.username)}</b></div>
             </div>
-            <div style="display:flex;gap:6px;">
-              <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px;" onclick="respondFriendship(${r.id}, 'accepted')">Принять</button>
-              <button class="btn btn-danger" style="padding:6px 12px;font-size:12px;" onclick="respondFriendship(${r.id}, 'rejected')">Отклонить</button>
+            <div style="display:flex;gap:4px;">
+              <button class="btn btn-sm btn-secondary" onclick="respondFriendship(${r.id}, 'accepted')">✓</button>
+              <button class="btn btn-sm btn-danger" onclick="respondFriendship(${r.id}, 'rejected')">✕</button>
             </div>
           `;
           reqBox.appendChild(div);
         });
       }
 
-      // 2. Загрузка списка друзей
       const { data: friends } = await db.from('friendships')
         .select('id, sender_id, receiver_id, sender:profiles!friendships_sender_id_fkey(*), receiver:profiles!friendships_receiver_id_fkey(*)')
         .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
@@ -436,7 +461,7 @@
       friendsBox.innerHTML = '';
 
       if (!friends || friends.length === 0) {
-        friendsBox.innerHTML = '<p style="color:var(--subtext);font-size:13px;">У вас пока нет друзей</p>';
+        friendsBox.innerHTML = '<p style="color:var(--subtext);font-size:12px;">Список друзей пуст</p>';
       } else {
         friends.forEach(f => {
           const friendProfile = f.sender_id === currentUser.id ? f.receiver : f.sender;
@@ -447,9 +472,9 @@
               <div class="avatar-img">${friendProfile.avatar_url ? `<img src="${friendProfile.avatar_url}" style="width:100%;height:100%;border-radius:50%;">` : friendProfile.username.charAt(0).toUpperCase()}</div>
               <div>
                 <b>${escapeHtml(friendProfile.full_name || friendProfile.username)}</b>
-                <p style="font-size:11px;color:var(--subtext);">${escapeHtml(friendProfile.bio || 'В сети')}</p>
               </div>
             </div>
+            <button class="btn btn-sm" onclick="openDmWith('${friendProfile.id}', '${escapeHtml(friendProfile.full_name || friendProfile.username)}')">💬 Написать</button>
           `;
           friendsBox.appendChild(div);
         });
@@ -465,7 +490,100 @@
       loadFriendsAndRequests();
     }
 
-    // --- ЧАТ И СООБЩЕНИЯ ---
+    // --- ЛИЧНЫЕ СООБЩЕНИЯ (ЛС) ---
+    async function loadDmFriends() {
+      const { data: friends } = await db.from('friendships')
+        .select('id, sender_id, receiver_id, sender:profiles!friendships_sender_id_fkey(*), receiver:profiles!friendships_receiver_id_fkey(*)')
+        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+        .eq('status', 'accepted');
+
+      const container = document.getElementById('dm-friends-list');
+      container.innerHTML = '';
+
+      if (!friends || friends.length === 0) {
+        container.innerHTML = '<p style="color:var(--subtext); font-size:13px;">У вас пока нет друзей для переписки</p>';
+        return;
+      }
+
+      friends.forEach(f => {
+        const friend = f.sender_id === currentUser.id ? f.receiver : f.sender;
+        const div = document.createElement('div');
+        div.className = 'user-card';
+        div.innerHTML = `
+          <div class="user-info-block">
+            <div class="avatar-img">${friend.avatar_url ? `<img src="${friend.avatar_url}" style="width:100%;height:100%;border-radius:50%;">` : friend.username.charAt(0).toUpperCase()}</div>
+            <div><b>${escapeHtml(friend.full_name || friend.username)}</b></div>
+          </div>
+          <button class="btn btn-sm" onclick="openDmWith('${friend.id}', '${escapeHtml(friend.full_name || friend.username)}')">Открыть диалог</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function openDmWith(friendId, friendName) {
+      activeDmPartner = { id: friendId, name: friendName };
+      document.getElementById('dm-select-screen').classList.add('hidden');
+      document.getElementById('dm-chat-screen').classList.remove('hidden');
+      document.getElementById('dm-partner-name').innerText = friendName;
+      
+      switchView('dm', document.querySelectorAll('.nav-item')[1], '✉️ Чат с ' + friendName);
+      loadDmMessages();
+    }
+
+    function closeDmChat() {
+      activeDmPartner = null;
+      document.getElementById('dm-select-screen').classList.remove('hidden');
+      document.getElementById('dm-chat-screen').classList.add('hidden');
+    }
+
+    async function loadDmMessages() {
+      if (!activeDmPartner) return;
+      const { data } = await db.from('direct_messages')
+        .select('*')
+        .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeDmPartner.id}),and(sender_id.eq.${activeDmPartner.id},receiver_id.eq.${currentUser.id})`)
+        .order('created_at', { ascending: true });
+
+      const box = document.getElementById('dm-chat-box');
+      box.innerHTML = '';
+      if (data) {
+        data.forEach(msg => {
+          const isMy = msg.sender_id === currentUser.id;
+          const div = document.createElement('div');
+          div.className = `msg-group ${isMy ? 'my' : 'their'}`;
+          div.innerHTML = `
+            <div class="msg-meta">${isMy ? 'Вы' : activeDmPartner.name}</div>
+            <div class="msg-bubble">${escapeHtml(msg.content)}</div>
+          `;
+          box.appendChild(div);
+        });
+      }
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendDmMessage() {
+      const input = document.getElementById('dm-message-input');
+      const text = input.value.trim();
+      if (!text || !activeDmPartner) return;
+      input.value = '';
+
+      await db.from('direct_messages').insert([{
+        sender_id: currentUser.id,
+        receiver_id: activeDmPartner.id,
+        content: text
+      }]);
+
+      loadDmMessages();
+    }
+
+    async function clearDmHistory() {
+      if (!activeDmPartner || !confirm('Очистить историю этого диалога?')) return;
+      await db.from('direct_messages')
+        .delete()
+        .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeDmPartner.id}),and(sender_id.eq.${activeDmPartner.id},receiver_id.eq.${currentUser.id})`);
+      loadDmMessages();
+    }
+
+    // --- ОБЩИЙ ЧАТ ---
     async function loadMessages() {
       const { data } = await db.from('group_messages').select('*').order('created_at', { ascending: true }).limit(100);
       const chatBox = document.getElementById('chat-box');
@@ -500,33 +618,24 @@
       await db.from('group_messages').insert([{ username: myName, content: text }]);
     }
 
+    async function clearGeneralChatHistory() {
+      if (!confirm('Вы точно хотите очистить всю историю общего чата?')) return;
+      await db.from('group_messages').delete().gte('id', 0);
+      loadMessages();
+    }
+
     function subscribeRealtime() {
       db.channel('public_chats')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'group_messages' }, () => loadMessages())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'direct_messages' }, () => {
+          if (activeDmPartner) loadDmMessages();
+        })
         .subscribe();
     }
 
-    // --- НАСТРОЙКИ И ЧИТ-КОДЫ ---
+    // --- МОДАЛЬНОЕ ОКНО НАСТРОЕК ---
     function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
     function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
-
-    async function applyCheatCode() {
-      const input = document.getElementById('cheat-code-input');
-      const code = input.value.trim();
-
-      if (code === '#delete_all') {
-        if (confirm('Удалить всю историю сообщений для всех?')) {
-          await db.from('group_messages').delete().gte('id', 0);
-          closeSettings();
-        }
-      } else if (code === '#matrix') {
-        applyTheme('matrix');
-        closeSettings();
-      } else {
-        alert('❌ Неизвестный код');
-      }
-      input.value = '';
-    }
 
     function escapeHtml(text) {
       return text ? text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
