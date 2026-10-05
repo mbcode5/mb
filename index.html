@@ -1,9 +1,10 @@
-```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+
 <title>MB — Social</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -19,14 +20,15 @@
 :root{
   --black:#000;
   --white:#fff;
-  --gray:#111;
-  --gray2:#181818;
-  --gray3:#222;
+  --bg:#050505;
+  --card:#0d0d0d;
+  --card2:#151515;
   --line:#292929;
-  --muted:#8b8b8b;
+  --muted:#777;
 }
 
-html,body{
+html,
+body{
   width:100%;
   height:100%;
   background:#000;
@@ -37,7 +39,10 @@ body{
   overflow:hidden;
 }
 
-button,input,textarea,select{
+button,
+input,
+textarea,
+select{
   font:inherit;
 }
 
@@ -54,15 +59,14 @@ button{
 ========================= */
 
 .app{
-  width:100%;
   height:100dvh;
-  background:#000;
   display:flex;
   flex-direction:column;
+  background:#000;
 }
 
 .topbar{
-  height:64px;
+  height:60px;
   flex-shrink:0;
   display:flex;
   align-items:center;
@@ -74,62 +78,59 @@ button{
 
 .logo{
   font-size:21px;
-  font-weight:800;
+  font-weight:900;
   letter-spacing:-1px;
 }
 
 .icon-btn{
-  width:42px;
-  height:42px;
+  width:40px;
+  height:40px;
   border:1px solid var(--line);
+  border-radius:4px;
   background:#000;
   color:#fff;
-  border-radius:50%;
   display:flex;
-  align-items:center;
   justify-content:center;
-  font-size:18px;
+  align-items:center;
 }
 
 .main{
   flex:1;
   min-height:0;
   display:flex;
-  overflow:hidden;
 }
 
 .sidebar{
-  width:240px;
-  border-right:1px solid var(--line);
-  padding:20px 12px;
+  width:230px;
   flex-shrink:0;
+  border-right:1px solid var(--line);
+  padding:18px 10px;
 }
 
 .nav-btn{
   width:100%;
-  height:48px;
-  border:0;
+  height:44px;
+  border:1px solid transparent;
+  border-radius:4px;
   background:transparent;
-  color:#888;
+  color:#777;
   text-align:left;
-  padding:0 16px;
-  border-radius:12px;
-  margin-bottom:5px;
+  padding:0 14px;
+  margin-bottom:4px;
   font-weight:600;
-  transition:.2s;
 }
 
 .nav-btn:hover,
 .nav-btn.active{
-  background:#181818;
   color:#fff;
+  background:#151515;
+  border-color:#252525;
 }
 
 .content{
   flex:1;
   min-width:0;
   overflow-y:auto;
-  background:#000;
 }
 
 .page{
@@ -143,6 +144,50 @@ button{
   display:block;
 }
 
+.page-title{
+  font-size:27px;
+  font-weight:900;
+  margin-bottom:5px;
+}
+
+.page-sub{
+  color:#666;
+  font-size:13px;
+  margin-bottom:22px;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.primary,
+.outline{
+  border-radius:4px;
+  height:44px;
+  padding:0 16px;
+  font-weight:700;
+}
+
+.primary{
+  border:1px solid #fff;
+  background:#fff;
+  color:#000;
+}
+
+.outline{
+  border:1px solid #333;
+  background:#000;
+  color:#fff;
+}
+
+.primary:hover{
+  background:#ddd;
+}
+
+.outline:hover{
+  background:#171717;
+}
+
 /* =========================
    AUTH
 ========================= */
@@ -151,8 +196,8 @@ button{
   width:100%;
   height:100dvh;
   display:flex;
-  justify-content:center;
   align-items:center;
+  justify-content:center;
   background:#000;
   padding:20px;
 }
@@ -160,39 +205,38 @@ button{
 .auth-box{
   width:100%;
   max-width:390px;
-  border:1px solid #292929;
-  padding:32px;
-  border-radius:22px;
   background:#090909;
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:30px;
 }
 
 .auth-logo{
-  font-size:30px;
-  font-weight:800;
   text-align:center;
-  margin-bottom:7px;
+  font-size:31px;
+  font-weight:900;
 }
 
 .auth-sub{
   text-align:center;
-  color:#777;
+  color:#666;
+  margin:5px 0 25px;
   font-size:13px;
-  margin-bottom:28px;
 }
 
 .tabs{
   display:flex;
-  gap:6px;
-  margin-bottom:18px;
+  gap:5px;
+  margin-bottom:15px;
 }
 
 .tab{
   flex:1;
   height:42px;
-  border:1px solid #292929;
+  border:1px solid var(--line);
+  border-radius:4px;
   background:#000;
-  color:#888;
-  border-radius:10px;
+  color:#777;
 }
 
 .tab.active{
@@ -200,114 +244,62 @@ button{
   color:#000;
 }
 
-.input{
+.input,
+.select,
+.textarea{
   width:100%;
-  height:48px;
   border:1px solid #292929;
+  border-radius:4px;
   background:#111;
   color:#fff;
   outline:none;
-  border-radius:12px;
-  padding:0 14px;
-  margin-bottom:10px;
+}
+
+.input,
+.select{
+  height:46px;
+  padding:0 12px;
+  margin-bottom:9px;
 }
 
 .textarea{
-  width:100%;
+  padding:12px;
   min-height:100px;
   resize:vertical;
-  border:1px solid #292929;
-  background:#111;
-  color:#fff;
-  outline:none;
-  border-radius:12px;
-  padding:13px;
-}
-
-.select{
-  width:100%;
-  height:48px;
-  border:1px solid #292929;
-  background:#111;
-  color:#fff;
-  border-radius:12px;
-  padding:0 12px;
-}
-
-.primary{
-  width:100%;
-  height:48px;
-  border:0;
-  border-radius:12px;
-  background:#fff;
-  color:#000;
-  font-weight:700;
-}
-
-.outline{
-  height:44px;
-  border:1px solid #333;
-  border-radius:11px;
-  background:#000;
-  color:#fff;
-  padding:0 16px;
-}
-
-.danger{
-  background:#fff;
-  color:#000;
 }
 
 /* =========================
-   HEADINGS
-========================= */
-
-.page-title{
-  font-size:27px;
-  font-weight:800;
-  letter-spacing:-.7px;
-  margin-bottom:5px;
-}
-
-.page-sub{
-  color:#777;
-  font-size:13px;
-  margin-bottom:24px;
-}
-
-/* =========================
-   FEED
+   CREATE POST
 ========================= */
 
 .create-post{
   border:1px solid var(--line);
-  border-radius:16px;
-  padding:16px;
-  margin-bottom:18px;
+  border-radius:4px;
   background:#090909;
+  padding:15px;
+  margin-bottom:16px;
 }
 
-.create-row{
+.create-top{
   display:flex;
-  gap:12px;
+  gap:10px;
 }
 
 .mini-avatar{
   width:40px;
   height:40px;
-  border-radius:50%;
   flex-shrink:0;
   background:#fff;
   color:#000;
+  border-radius:4px;
   display:flex;
   justify-content:center;
   align-items:center;
-  font-weight:800;
+  font-weight:900;
   overflow:hidden;
 }
 
-.mini-avatar img,
-.avatar img{
+.mini-avatar img{
   width:100%;
   height:100%;
   object-fit:cover;
@@ -315,43 +307,99 @@ button{
 
 .post-input{
   flex:1;
-  min-height:40px;
-  border:0;
-  outline:0;
-  resize:none;
+  min-height:42px;
+  max-height:180px;
+  resize:vertical;
+  border:1px solid #222;
+  border-radius:4px;
   background:#111;
   color:#fff;
-  border-radius:12px;
-  padding:11px 13px;
+  outline:none;
+  padding:11px;
 }
+
+.photo-preview{
+  display:none;
+  position:relative;
+  margin-top:12px;
+  border:1px solid #292929;
+  border-radius:4px;
+  overflow:hidden;
+  background:#000;
+}
+
+.photo-preview img{
+  width:100%;
+  max-height:400px;
+  display:block;
+  object-fit:contain;
+}
+
+.remove-photo{
+  position:absolute;
+  right:8px;
+  top:8px;
+  width:32px;
+  height:32px;
+  border:1px solid #fff;
+  border-radius:4px;
+  background:#000;
+  color:#fff;
+}
+
+.create-bottom{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-top:12px;
+}
+
+.photo-button{
+  height:40px;
+  border:1px solid #292929;
+  border-radius:4px;
+  background:#000;
+  color:#fff;
+  padding:0 13px;
+}
+
+/* =========================
+   POSTS
+========================= */
 
 .post{
   border:1px solid var(--line);
-  border-radius:17px;
-  padding:17px;
-  margin-bottom:15px;
+  border-radius:4px;
   background:#080808;
+  margin-bottom:14px;
+  overflow:hidden;
 }
 
 .post-head{
   display:flex;
   align-items:center;
-  gap:11px;
-  margin-bottom:13px;
+  gap:10px;
+  padding:15px;
 }
 
 .avatar{
-  width:44px;
-  height:44px;
-  border-radius:50%;
-  overflow:hidden;
+  width:42px;
+  height:42px;
+  border-radius:4px;
   background:#fff;
   color:#000;
   display:flex;
-  justify-content:center;
   align-items:center;
-  font-weight:800;
+  justify-content:center;
+  font-weight:900;
+  overflow:hidden;
   flex-shrink:0;
+}
+
+.avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
 }
 
 .post-name{
@@ -365,30 +413,38 @@ button{
 }
 
 .post-content{
-  line-height:1.55;
-  font-size:15px;
+  padding:0 15px 15px;
   white-space:pre-wrap;
   word-break:break-word;
+  line-height:1.55;
+}
+
+.post-image{
+  width:100%;
+  max-height:650px;
+  display:block;
+  object-fit:contain;
+  background:#000;
 }
 
 .post-actions{
   display:flex;
-  gap:8px;
-  margin-top:16px;
-  border-top:1px solid #1d1d1d;
-  padding-top:12px;
+  gap:4px;
+  padding:10px;
+  border-top:1px solid #1b1b1b;
 }
 
 .action{
-  border:0;
+  height:36px;
+  border:1px solid transparent;
+  border-radius:4px;
   background:transparent;
   color:#777;
-  padding:6px 9px;
-  border-radius:8px;
+  padding:0 10px;
 }
 
 .action:hover{
-  background:#181818;
+  background:#151515;
   color:#fff;
 }
 
@@ -397,117 +453,117 @@ button{
 }
 
 /* =========================
-   PEOPLE
+   PEOPLE / FRIENDS
 ========================= */
 
 .filters{
   display:grid;
-  grid-template-columns:1fr 1fr auto;
-  gap:8px;
-  margin-bottom:18px;
+  grid-template-columns:1fr 1fr 110px;
+  gap:7px;
+  margin-bottom:15px;
 }
 
-.person{
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:14px;
+.person,
+.friend{
   display:flex;
   align-items:center;
-  gap:13px;
-  margin-bottom:9px;
+  gap:11px;
+  padding:12px;
+  margin-bottom:7px;
+  border:1px solid var(--line);
+  border-radius:4px;
   background:#090909;
 }
 
-.person-info{
+.person-info,
+.friend-info{
   flex:1;
   min-width:0;
 }
 
-.person-name{
+.person-name,
+.friend-name{
   font-weight:700;
 }
 
-.person-meta{
-  color:#777;
+.person-meta,
+.friend-username{
+  color:#666;
   font-size:12px;
   margin-top:3px;
-}
-
-.person-actions{
-  display:flex;
-  gap:6px;
 }
 
 /* =========================
    PROFILE
 ========================= */
 
-.profile-cover{
+.profile-card{
   border:1px solid var(--line);
-  border-radius:20px;
-  padding:28px;
+  border-radius:4px;
+  padding:25px;
   background:#090909;
-  margin-bottom:16px;
+  margin-bottom:14px;
 }
 
 .profile-top{
   display:flex;
   align-items:center;
-  gap:18px;
+  gap:16px;
 }
 
 .profile-avatar{
-  width:92px;
-  height:92px;
-  border-radius:50%;
-  overflow:hidden;
+  width:86px;
+  height:86px;
+  border-radius:4px;
   background:#fff;
   color:#000;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:32px;
-  font-weight:800;
-  flex-shrink:0;
+  overflow:hidden;
+  font-size:30px;
+  font-weight:900;
+}
+
+.profile-avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
 }
 
 .profile-name{
   font-size:24px;
-  font-weight:800;
+  font-weight:900;
 }
 
 .username{
-  color:#777;
+  color:#666;
   margin-top:3px;
 }
 
 .bio{
+  margin-top:16px;
   color:#aaa;
-  margin-top:15px;
   line-height:1.5;
 }
 
 .profile-details{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:9px;
+  gap:7px;
   margin-top:18px;
 }
 
 .detail{
   border:1px solid #292929;
-  padding:13px;
-  border-radius:12px;
+  border-radius:4px;
+  padding:12px;
 }
 
 .detail-label{
   color:#666;
   font-size:11px;
-  margin-bottom:5px;
-}
-
-.detail-value{
-  font-size:14px;
+  margin-bottom:4px;
 }
 
 /* =========================
@@ -518,7 +574,6 @@ button{
   max-width:900px;
   height:100%;
   padding:0;
-  margin:auto;
 }
 
 .chat-layout{
@@ -528,14 +583,13 @@ button{
 }
 
 .chat-header{
-  height:70px;
+  height:64px;
   flex-shrink:0;
+  border-bottom:1px solid var(--line);
   display:flex;
   align-items:center;
-  gap:12px;
-  padding:0 20px;
-  border-bottom:1px solid var(--line);
-  background:#000;
+  gap:10px;
+  padding:0 15px;
 }
 
 .chat-user{
@@ -549,23 +603,20 @@ button{
 .chat-user-status{
   color:#666;
   font-size:11px;
-  margin-top:2px;
 }
 
 .chat-messages{
   flex:1;
   min-height:0;
   overflow-y:auto;
-  padding:22px 20px;
+  padding:18px;
   display:flex;
   flex-direction:column;
-  gap:8px;
-  background:#030303;
+  gap:7px;
 }
 
 .message-row{
   display:flex;
-  width:100%;
 }
 
 .message-row.mine{
@@ -573,97 +624,65 @@ button{
 }
 
 .message{
-  max-width:min(70%,520px);
-  padding:10px 14px;
-  border-radius:17px;
-  background:#1b1b1b;
-  color:#fff;
+  max-width:70%;
+  padding:10px 13px;
+  border-radius:4px;
+  background:#181818;
   line-height:1.45;
-  font-size:14px;
   word-break:break-word;
 }
 
 .mine .message{
   background:#fff;
   color:#000;
-  border-bottom-right-radius:5px;
 }
 
 .message-time{
   font-size:9px;
   opacity:.5;
-  margin-top:4px;
   text-align:right;
+  margin-top:4px;
 }
 
 .chat-input{
-  flex-shrink:0;
-  padding:12px 16px max(12px,env(safe-area-inset-bottom));
-  border-top:1px solid var(--line);
   display:flex;
-  gap:8px;
-  background:#000;
+  gap:7px;
+  padding:10px;
+  border-top:1px solid var(--line);
 }
 
 .chat-input input{
   flex:1;
-  height:46px;
+  height:44px;
   border:1px solid #292929;
+  border-radius:4px;
   background:#111;
   color:#fff;
-  border-radius:23px;
-  outline:0;
-  padding:0 16px;
+  outline:none;
+  padding:0 13px;
 }
 
 .send{
-  width:46px;
-  height:46px;
-  border-radius:50%;
-  border:0;
+  width:44px;
+  height:44px;
+  border:1px solid #fff;
+  border-radius:4px;
   background:#fff;
   color:#000;
-  font-weight:800;
+  font-weight:900;
 }
 
 /* =========================
-   FRIENDS
-========================= */
-
-.friend{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  border:1px solid var(--line);
-  border-radius:15px;
-  padding:13px;
-  margin-bottom:8px;
-}
-
-.friend-info{
-  flex:1;
-}
-
-.friend-name{
-  font-weight:700;
-}
-
-.friend-username{
-  color:#666;
-  font-size:12px;
-}
-
-/* =========================
-   SETTINGS FULL SCREEN
+   SETTINGS
 ========================= */
 
 .fullscreen{
   position:fixed;
   inset:0;
   z-index:100;
-  background:#000;
   display:none;
   flex-direction:column;
+  background:#000;
 }
 
 .fullscreen.open{
@@ -671,30 +690,26 @@ button{
 }
 
 .full-header{
-  height:64px;
-  border-bottom:1px solid #292929;
+  height:62px;
+  border-bottom:1px solid var(--line);
   display:flex;
   align-items:center;
-  gap:14px;
-  padding:0 20px;
-}
-
-.full-header h2{
-  font-size:20px;
+  gap:12px;
+  padding:0 18px;
 }
 
 .full-body{
   flex:1;
   overflow-y:auto;
-  padding:28px 20px;
+  padding:25px 18px;
 }
 
 .settings-item{
   max-width:650px;
-  margin:0 auto 10px;
-  border:1px solid #292929;
-  border-radius:15px;
+  margin:0 auto 8px;
   padding:17px;
+  border:1px solid var(--line);
+  border-radius:4px;
   background:#090909;
 }
 
@@ -709,22 +724,33 @@ button{
 }
 
 /* =========================
-   MOBILE NAV
+   EMPTY / LOADING
+========================= */
+
+.empty,
+.loading{
+  text-align:center;
+  padding:50px 20px;
+  color:#666;
+}
+
+/* =========================
+   MOBILE
 ========================= */
 
 .mobile-nav{
   display:none;
-  height:65px;
-  border-top:1px solid #292929;
-  background:#000;
+  height:62px;
   flex-shrink:0;
+  border-top:1px solid var(--line);
+  background:#000;
   padding-bottom:env(safe-area-inset-bottom);
 }
 
 .mobile-nav button{
   flex:1;
   border:0;
-  background:transparent;
+  background:#000;
   color:#666;
   font-size:11px;
 }
@@ -733,31 +759,10 @@ button{
   color:#fff;
 }
 
-/* =========================
-   EMPTY
-========================= */
-
-.empty{
-  text-align:center;
-  padding:60px 20px;
-  color:#666;
-}
-
-.loading{
-  text-align:center;
-  padding:30px;
-  color:#666;
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
-
 @media(max-width:700px){
 
   .topbar{
-    height:58px;
-    padding:0 15px;
+    padding:0 14px;
   }
 
   .sidebar{
@@ -769,7 +774,7 @@ button{
   }
 
   .page{
-    padding:20px 14px 90px;
+    padding:20px 12px 80px;
   }
 
   .page-title{
@@ -784,26 +789,18 @@ button{
     grid-column:1/-1;
   }
 
-  .person{
-    padding:11px;
-  }
-
   .person-actions{
+    display:flex;
     flex-direction:column;
   }
 
-  .profile-cover{
-    padding:20px;
-  }
-
-  .profile-top{
-    align-items:flex-start;
+  .profile-card{
+    padding:19px;
   }
 
   .profile-avatar{
-    width:76px;
-    height:76px;
-    font-size:26px;
+    width:72px;
+    height:72px;
   }
 
   .profile-name{
@@ -818,22 +815,13 @@ button{
     max-width:82%;
   }
 
-  .chat-header{
-    padding:0 13px;
+  .post-image{
+    max-height:500px;
   }
 
-  .chat-messages{
-    padding:16px 12px;
-  }
-
-  .auth-box{
-    padding:24px 18px;
-  }
-}
-
-@media(min-width:701px){
-  .content{
-    padding-bottom:0;
+  .create-bottom{
+    flex-wrap:wrap;
+    gap:8px;
   }
 }
 </style>
@@ -850,16 +838,27 @@ button{
   <div class="auth-box">
 
     <div class="auth-logo">MB</div>
-    <div class="auth-sub">Социальная сеть</div>
+
+    <div class="auth-sub">
+      Социальная сеть
+    </div>
 
     <div class="tabs">
-      <button id="loginTab" class="tab active" onclick="authTab('login')">
+
+      <button
+        id="loginTab"
+        class="tab active"
+        onclick="authTab('login')">
         Вход
       </button>
 
-      <button id="registerTab" class="tab" onclick="authTab('register')">
+      <button
+        id="registerTab"
+        class="tab"
+        onclick="authTab('register')">
         Регистрация
       </button>
+
     </div>
 
     <div id="loginForm">
@@ -868,17 +867,18 @@ button{
         id="loginEmail"
         class="input"
         type="email"
-        placeholder="Email"
-      >
+        placeholder="Email">
 
       <input
         id="loginPassword"
         class="input"
         type="password"
-        placeholder="Пароль"
-      >
+        placeholder="Пароль">
 
-      <button class="primary" onclick="login()">
+      <button
+        class="primary"
+        style="width:100%"
+        onclick="login()">
         Войти
       </button>
 
@@ -889,30 +889,29 @@ button{
       <input
         id="regUsername"
         class="input"
-        placeholder="Никнейм"
-      >
+        placeholder="Никнейм">
 
       <input
         id="regName"
         class="input"
-        placeholder="Имя"
-      >
+        placeholder="Имя">
 
       <input
         id="regEmail"
         class="input"
         type="email"
-        placeholder="Email"
-      >
+        placeholder="Email">
 
       <input
         id="regPassword"
         class="input"
         type="password"
-        placeholder="Пароль"
-      >
+        placeholder="Пароль">
 
-      <button class="primary" onclick="register()">
+      <button
+        class="primary"
+        style="width:100%"
+        onclick="register()">
         Создать аккаунт
       </button>
 
@@ -931,10 +930,14 @@ button{
 
   <header class="topbar">
 
-    <div class="logo">MB</div>
+    <div class="logo">
+      MB
+    </div>
 
-    <button class="icon-btn" onclick="openSettings()">
-      ⚙
+    <button
+      class="icon-btn"
+      onclick="openSettings()">
+      ≡
     </button>
 
   </header>
@@ -944,23 +947,27 @@ button{
 
     <aside class="sidebar">
 
-      <button class="nav-btn active"
-              onclick="showPage('feed',this)">
+      <button
+        class="nav-btn active"
+        onclick="showPage('feed',this)">
         Лента
       </button>
 
-      <button class="nav-btn"
-              onclick="showPage('people',this)">
+      <button
+        class="nav-btn"
+        onclick="showPage('people',this)">
         Люди
       </button>
 
-      <button class="nav-btn"
-              onclick="showPage('friends',this)">
+      <button
+        class="nav-btn"
+        onclick="showPage('friends',this)">
         Друзья
       </button>
 
-      <button class="nav-btn"
-              onclick="showPage('profile',this)">
+      <button
+        class="nav-btn"
+        onclick="showPage('profile',this)">
         Профиль
       </button>
 
@@ -969,19 +976,30 @@ button{
 
     <section class="content">
 
-      <!-- FEED -->
+      <!-- =====================
+           FEED
+      ====================== -->
 
-      <div id="page-feed" class="page active">
+      <div
+        id="page-feed"
+        class="page active">
 
-        <h1 class="page-title">Лента</h1>
-        <p class="page-sub">Публикации пользователей</p>
+        <h1 class="page-title">
+          Лента
+        </h1>
+
+        <p class="page-sub">
+          Публикации пользователей
+        </p>
+
 
         <div class="create-post">
 
-          <div class="create-row">
+          <div class="create-top">
 
-            <div id="postAvatar"
-                 class="mini-avatar">
+            <div
+              id="postAvatar"
+              class="mini-avatar">
               ?
             </div>
 
@@ -989,15 +1007,49 @@ button{
               id="postText"
               class="post-input"
               placeholder="Что нового?"
-              rows="1"
-            ></textarea>
+              rows="1"></textarea>
 
           </div>
 
-          <div style="margin-top:10px;text-align:right">
+
+          <!-- PHOTO PREVIEW -->
+
+          <div
+            id="photoPreview"
+            class="photo-preview">
+
+            <img
+              id="previewImage"
+              src=""
+              alt="">
 
             <button
-              class="outline"
+              class="remove-photo"
+              onclick="removePhoto()">
+              ×
+            </button>
+
+          </div>
+
+
+          <div class="create-bottom">
+
+            <label class="photo-button">
+
+              Фото
+
+              <input
+                id="photoInput"
+                type="file"
+                accept="image/*"
+                hidden
+                onchange="previewPhoto(event)">
+
+            </label>
+
+
+            <button
+              class="primary"
               onclick="createPost()">
               Опубликовать
             </button>
@@ -1006,42 +1058,94 @@ button{
 
         </div>
 
+
         <div id="feed">
+
           <div class="loading">
-            Загрузка ленты...
+            Загрузка...
           </div>
+
         </div>
 
       </div>
 
 
-      <!-- PEOPLE -->
+      <!-- =====================
+           PEOPLE
+      ====================== -->
 
-      <div id="page-people" class="page">
+      <div
+        id="page-people"
+        class="page">
 
-        <h1 class="page-title">Люди</h1>
+        <h1 class="page-title">
+          Люди
+        </h1>
+
         <p class="page-sub">
-          Найдите людей по возрасту и полу
+          Поиск по возрасту и полу
         </p>
+
 
         <div class="filters">
 
-          <select id="ageFilter" class="select">
-            <option value="">Любой возраст</option>
-            <option value="13-15">13–15</option>
-            <option value="16-18">16–18</option>
-            <option value="19-22">19–22</option>
-            <option value="23-30">23–30</option>
-            <option value="31-40">31–40</option>
-            <option value="41+">41+</option>
+          <select
+            id="ageFilter"
+            class="select">
+
+            <option value="">
+              Любой возраст
+            </option>
+
+            <option value="13-15">
+              13–15
+            </option>
+
+            <option value="16-18">
+              16–18
+            </option>
+
+            <option value="19-22">
+              19–22
+            </option>
+
+            <option value="23-30">
+              23–30
+            </option>
+
+            <option value="31-40">
+              31–40
+            </option>
+
+            <option value="41+">
+              41+
+            </option>
+
           </select>
 
-          <select id="genderFilter" class="select">
-            <option value="">Любой пол</option>
-            <option value="male">Мужчина</option>
-            <option value="female">Женщина</option>
-            <option value="other">Другое</option>
+
+          <select
+            id="genderFilter"
+            class="select">
+
+            <option value="">
+              Любой пол
+            </option>
+
+            <option value="male">
+              Мужчина
+            </option>
+
+            <option value="female">
+              Женщина
+            </option>
+
+            <option value="other">
+              Другое
+            </option>
+
           </select>
+
 
           <button
             class="primary"
@@ -1051,25 +1155,37 @@ button{
 
         </div>
 
+
         <div id="peopleList"></div>
 
       </div>
 
 
-      <!-- FRIENDS -->
+      <!-- =====================
+           FRIENDS
+      ====================== -->
 
-      <div id="page-friends" class="page">
+      <div
+        id="page-friends"
+        class="page">
 
-        <h1 class="page-title">Друзья</h1>
-        <p class="page-sub">Заявки и ваши друзья</p>
+        <h1 class="page-title">
+          Друзья
+        </h1>
+
+        <p class="page-sub">
+          Заявки и друзья
+        </p>
+
 
         <h3 style="margin-bottom:10px">
-          Входящие заявки
+          Заявки
         </h3>
 
         <div id="requests"></div>
 
-        <h3 style="margin:25px 0 10px">
+
+        <h3 style="margin:24px 0 10px">
           Мои друзья
         </h3>
 
@@ -1078,28 +1194,35 @@ button{
       </div>
 
 
-      <!-- PROFILE -->
+      <!-- =====================
+           PROFILE
+      ====================== -->
 
-      <div id="page-profile" class="page">
+      <div
+        id="page-profile"
+        class="page">
 
-        <div class="profile-cover">
+        <div class="profile-card">
 
           <div class="profile-top">
 
-            <div id="profileAvatar"
-                 class="profile-avatar">
+            <div
+              id="profileAvatar"
+              class="profile-avatar">
               ?
             </div>
 
             <div>
 
-              <div id="profileName"
-                   class="profile-name">
+              <div
+                id="profileName"
+                class="profile-name">
                 ---
               </div>
 
-              <div id="profileUsername"
-                   class="username">
+              <div
+                id="profileUsername"
+                class="username">
                 @---
               </div>
 
@@ -1107,10 +1230,13 @@ button{
 
           </div>
 
-          <div id="profileBio"
-               class="bio">
+
+          <div
+            id="profileBio"
+            class="bio">
             —
           </div>
+
 
           <div class="profile-details">
 
@@ -1120,12 +1246,12 @@ button{
                 Год рождения
               </div>
 
-              <div id="profileBirth"
-                   class="detail-value">
+              <div id="profileBirth">
                 Не указан
               </div>
 
             </div>
+
 
             <div class="detail">
 
@@ -1133,8 +1259,7 @@ button{
                 Пол
               </div>
 
-              <div id="profileGender"
-                   class="detail-value">
+              <div id="profileGender">
                 Не указан
               </div>
 
@@ -1151,32 +1276,28 @@ button{
             Редактировать профиль
           </div>
 
-          <div style="height:15px"></div>
+          <br>
 
           <input
             id="editName"
             class="input"
-            placeholder="Имя"
-          >
+            placeholder="Имя">
 
           <input
             id="editAvatar"
             class="input"
-            placeholder="URL аватара"
-          >
+            placeholder="URL аватара">
 
           <input
             id="editBirth"
             class="input"
             type="number"
-            placeholder="Год рождения"
-          >
+            placeholder="Год рождения">
+
 
           <select
             id="editGender"
-            class="select"
-            style="margin-bottom:10px"
-          >
+            class="select">
 
             <option value="">
               Пол
@@ -1196,15 +1317,17 @@ button{
 
           </select>
 
+
           <textarea
             id="editBio"
             class="textarea"
-            placeholder="О себе"
-          ></textarea>
+            style="margin-top:9px"
+            placeholder="О себе"></textarea>
+
 
           <button
             class="primary"
-            style="margin-top:10px"
+            style="margin-top:9px"
             onclick="saveProfile()">
             Сохранить
           </button>
@@ -1214,10 +1337,13 @@ button{
       </div>
 
 
-      <!-- CHAT -->
+      <!-- =====================
+           CHAT
+      ====================== -->
 
-      <div id="page-chat"
-           class="page chat-page">
+      <div
+        id="page-chat"
+        class="page chat-page">
 
         <div class="chat-layout">
 
@@ -1229,15 +1355,17 @@ button{
               ←
             </button>
 
-            <div id="chatAvatar"
-                 class="mini-avatar">
+            <div
+              id="chatAvatar"
+              class="mini-avatar">
               ?
             </div>
 
             <div class="chat-user">
 
-              <div id="chatName"
-                   class="chat-user-name">
+              <div
+                id="chatName"
+                class="chat-user-name">
                 Чат
               </div>
 
@@ -1250,8 +1378,9 @@ button{
           </div>
 
 
-          <div id="messages"
-               class="chat-messages">
+          <div
+            id="messages"
+            class="chat-messages">
           </div>
 
 
@@ -1260,8 +1389,12 @@ button{
             <input
               id="messageInput"
               placeholder="Сообщение..."
-              onkeydown="if(event.key==='Enter')sendMessage()"
-            >
+              onkeydown="
+                if(event.key==='Enter'){
+                  event.preventDefault();
+                  sendMessage();
+                }
+              ">
 
             <button
               class="send"
@@ -1284,20 +1417,24 @@ button{
 
   <nav class="mobile-nav">
 
-    <button class="active"
-            onclick="mobilePage('feed',this)">
+    <button
+      class="active"
+      onclick="mobilePage('feed',this)">
       Лента
     </button>
 
-    <button onclick="mobilePage('people',this)">
+    <button
+      onclick="mobilePage('people',this)">
       Люди
     </button>
 
-    <button onclick="mobilePage('friends',this)">
+    <button
+      onclick="mobilePage('friends',this)">
       Друзья
     </button>
 
-    <button onclick="mobilePage('profile',this)">
+    <button
+      onclick="mobilePage('profile',this)">
       Профиль
     </button>
 
@@ -1307,11 +1444,12 @@ button{
 
 
 <!-- =========================
-     FULL SCREEN SETTINGS
+     SETTINGS
 ========================= -->
 
-<div id="settings"
-     class="fullscreen">
+<div
+  id="settings"
+  class="fullscreen">
 
   <div class="full-header">
 
@@ -1321,42 +1459,35 @@ button{
       ←
     </button>
 
-    <h2>Настройки</h2>
+    <h2>
+      Настройки
+    </h2>
 
   </div>
+
 
   <div class="full-body">
 
     <div class="settings-item">
 
       <div class="settings-title">
-        Аккаунт
+        Дизайн
       </div>
 
       <div class="settings-desc">
-        Управление вашей учётной записью
+        Интерфейс использует только чёрный, белый и оттенки серого.
       </div>
 
     </div>
 
-    <div class="settings-item">
-
-      <div class="settings-title">
-        Тема
-      </div>
-
-      <div class="settings-desc">
-        Дизайн сайта работает только в чёрно-белой системе.
-      </div>
-
-    </div>
 
     <div class="settings-item">
 
       <button
         class="primary"
+        style="width:100%"
         onclick="logout()">
-        Выйти из аккаунта
+        Выйти
       </button>
 
     </div>
@@ -1394,9 +1525,11 @@ let myProfile = null;
 let activeChatUser = null;
 let realtimeChannel = null;
 
+let selectedPhoto = null;
+
 
 /* =====================================================
-   AUTH STATE
+   AUTH
 ===================================================== */
 
 db.auth.onAuthStateChange(
@@ -1434,18 +1567,11 @@ db.auth.onAuthStateChange(
 );
 
 
-/* =====================================================
-   INITIALIZE
-===================================================== */
-
 async function initialize(){
 
   await loadMyProfile();
-
   await loadFeed();
-
   await loadPeople();
-
   await loadFriends();
 
   subscribeRealtime();
@@ -1459,10 +1585,10 @@ async function initialize(){
 
 function authTab(type){
 
-  const login =
+  const loginForm =
     document.getElementById("loginForm");
 
-  const register =
+  const registerForm =
     document.getElementById("registerForm");
 
   const loginTab =
@@ -1471,18 +1597,19 @@ function authTab(type){
   const registerTab =
     document.getElementById("registerTab");
 
+
   if(type==="login"){
 
-    login.classList.remove("hidden");
-    register.classList.add("hidden");
+    loginForm.classList.remove("hidden");
+    registerForm.classList.add("hidden");
 
     loginTab.classList.add("active");
     registerTab.classList.remove("active");
 
   }else{
 
-    login.classList.add("hidden");
-    register.classList.remove("hidden");
+    loginForm.classList.add("hidden");
+    registerForm.classList.remove("hidden");
 
     loginTab.classList.remove("active");
     registerTab.classList.add("active");
@@ -1509,15 +1636,17 @@ async function login(){
   if(!email || !password){
 
     alert("Введите email и пароль");
-
     return;
+
   }
+
 
   const {error} =
     await db.auth.signInWithPassword({
       email,
       password
     });
+
 
   if(error){
 
@@ -1550,19 +1679,17 @@ async function register(){
     document.getElementById("regPassword")
       .value;
 
-  if(!username || !name || !email || !password){
+
+  if(!username ||
+     !name ||
+     !email ||
+     !password){
 
     alert("Заполните все поля");
-
     return;
+
   }
 
-  if(password.length < 6){
-
-    alert("Пароль должен быть минимум 6 символов");
-
-    return;
-  }
 
   const {data,error} =
     await db.auth.signUp({
@@ -1578,23 +1705,28 @@ async function register(){
 
     });
 
+
   if(error){
 
     alert(error.message);
-
     return;
+
   }
+
 
   if(data.user){
 
     const {error:profileError} =
-      await db.from("profiles").insert({
+      await db
+        .from("profiles")
+        .insert({
 
-        id:data.user.id,
-        username,
-        full_name:name
+          id:data.user.id,
+          username,
+          full_name:name
 
-      });
+        });
+
 
     if(profileError){
 
@@ -1604,8 +1736,9 @@ async function register(){
 
   }
 
+
   alert(
-    "Аккаунт создан. Если Supabase требует подтверждение email, подтвердите его."
+    "Аккаунт создан. Если включено подтверждение email — подтвердите почту."
   );
 
 }
@@ -1623,11 +1756,11 @@ async function logout(){
       realtimeChannel
     );
 
+    realtimeChannel=null;
+
   }
 
   await db.auth.signOut();
-
-  closeSettings();
 
 }
 
@@ -1640,36 +1773,42 @@ function showPage(name,button){
 
   document
     .querySelectorAll(".page")
-    .forEach(p=>p.classList.remove("active"));
+    .forEach(page=>{
+      page.classList.remove("active");
+    });
+
 
   document
     .querySelectorAll(".nav-btn")
-    .forEach(b=>b.classList.remove("active"));
+    .forEach(btn=>{
+      btn.classList.remove("active");
+    });
+
 
   const page =
     document.getElementById(
       "page-"+name
     );
 
+
   if(page){
     page.classList.add("active");
   }
+
 
   if(button){
     button.classList.add("active");
   }
 
-  if(name==="feed"){
+
+  if(name==="feed")
     loadFeed();
-  }
 
-  if(name==="people"){
+  if(name==="people")
     loadPeople();
-  }
 
-  if(name==="friends"){
+  if(name==="friends")
     loadFriends();
-  }
 
 }
 
@@ -1680,7 +1819,9 @@ function mobilePage(name,button){
 
   document
     .querySelectorAll(".mobile-nav button")
-    .forEach(b=>b.classList.remove("active"));
+    .forEach(btn=>{
+      btn.classList.remove("active");
+    });
 
   button.classList.add("active");
 
@@ -1700,11 +1841,13 @@ async function loadMyProfile(){
       .eq("id",currentUser.id)
       .maybeSingle();
 
+
   if(error){
 
     console.error(error);
 
   }
+
 
   if(!data){
 
@@ -1712,7 +1855,8 @@ async function loadMyProfile(){
       currentUser.user_metadata?.username ||
       currentUser.email.split("@")[0];
 
-    const {data:newProfile} =
+
+    const result =
       await db
         .from("profiles")
         .insert({
@@ -1725,9 +1869,11 @@ async function loadMyProfile(){
         .select()
         .single();
 
-    data=newProfile;
+
+    data=result.data;
 
   }
+
 
   myProfile=data;
 
@@ -1740,17 +1886,22 @@ function renderMyProfile(){
 
   if(!myProfile)return;
 
+
   const name =
     myProfile.full_name ||
     myProfile.username;
+
 
   document.getElementById(
     "profileName"
   ).textContent=name;
 
+
   document.getElementById(
     "profileUsername"
-  ).textContent="@"+myProfile.username;
+  ).textContent=
+    "@"+myProfile.username;
+
 
   document.getElementById(
     "profileBio"
@@ -1758,46 +1909,55 @@ function renderMyProfile(){
     myProfile.bio ||
     "Пользователь пока ничего не написал о себе.";
 
+
   document.getElementById(
     "profileBirth"
   ).textContent=
     myProfile.birth_year ||
     "Не указан";
 
+
   document.getElementById(
     "profileGender"
   ).textContent=
     genderText(myProfile.gender);
+
 
   setAvatar(
     document.getElementById("profileAvatar"),
     myProfile
   );
 
+
   setAvatar(
     document.getElementById("postAvatar"),
     myProfile
   );
+
 
   document.getElementById(
     "editName"
   ).value=
     myProfile.full_name || "";
 
+
   document.getElementById(
     "editAvatar"
   ).value=
     myProfile.avatar_url || "";
+
 
   document.getElementById(
     "editBirth"
   ).value=
     myProfile.birth_year || "";
 
+
   document.getElementById(
     "editGender"
   ).value=
     myProfile.gender || "";
+
 
   document.getElementById(
     "editBio"
@@ -1809,11 +1969,14 @@ function renderMyProfile(){
 
 function genderText(gender){
 
-  if(gender==="male")return "Мужчина";
+  if(gender==="male")
+    return "Мужчина";
 
-  if(gender==="female")return "Женщина";
+  if(gender==="female")
+    return "Женщина";
 
-  if(gender==="other")return "Другое";
+  if(gender==="other")
+    return "Другое";
 
   return "Не указан";
 
@@ -1822,7 +1985,9 @@ function genderText(gender){
 
 function setAvatar(element,profile){
 
-  if(!element || !profile)return;
+  if(!element || !profile)
+    return;
+
 
   if(profile.avatar_url){
 
@@ -1832,9 +1997,11 @@ function setAvatar(element,profile){
   }else{
 
     element.textContent=
-      (profile.full_name ||
-       profile.username ||
-       "?")
+      (
+        profile.full_name ||
+        profile.username ||
+        "?"
+      )
       .charAt(0)
       .toUpperCase();
 
@@ -1871,21 +2038,6 @@ async function saveProfile(){
     document.getElementById("editBio")
       .value.trim();
 
-  const currentYear =
-    new Date().getFullYear();
-
-  if(
-    birth_year &&
-    (
-      birth_year < 1900 ||
-      birth_year > currentYear
-    )
-  ){
-
-    alert("Некорректный год рождения");
-
-    return;
-  }
 
   const {error} =
     await db
@@ -1901,16 +2053,262 @@ async function saveProfile(){
       })
       .eq("id",currentUser.id);
 
+
   if(error){
 
     alert(error.message);
-
     return;
+
   }
+
 
   await loadMyProfile();
 
   alert("Профиль сохранён");
+
+}
+
+
+/* =====================================================
+   PHOTO
+===================================================== */
+
+function previewPhoto(event){
+
+  const file =
+    event.target.files[0];
+
+  if(!file)
+    return;
+
+
+  if(!file.type.startsWith("image/")){
+
+    alert("Можно выбрать только изображение");
+
+    event.target.value="";
+
+    return;
+
+  }
+
+
+  if(file.size > 10 * 1024 * 1024){
+
+    alert("Максимальный размер фото — 10 MB");
+
+    event.target.value="";
+
+    return;
+
+  }
+
+
+  selectedPhoto=file;
+
+
+  const reader =
+    new FileReader();
+
+
+  reader.onload=function(e){
+
+    document.getElementById(
+      "previewImage"
+    ).src=e.target.result;
+
+
+    document.getElementById(
+      "photoPreview"
+    ).style.display="block";
+
+  };
+
+
+  reader.readAsDataURL(file);
+
+}
+
+
+function removePhoto(){
+
+  selectedPhoto=null;
+
+  document.getElementById(
+    "photoInput"
+  ).value="";
+
+
+  document.getElementById(
+    "previewImage"
+  ).src="";
+
+
+  document.getElementById(
+    "photoPreview"
+  ).style.display="none";
+
+}
+
+
+/* =====================================================
+   UPLOAD PHOTO
+===================================================== */
+
+async function uploadPostPhoto(file){
+
+  if(!file)
+    return null;
+
+
+  const extension =
+    file.name
+      .split(".")
+      .pop()
+      .toLowerCase();
+
+
+  const fileName =
+    currentUser.id +
+    "/" +
+    Date.now() +
+    "_" +
+    Math.random()
+      .toString(36)
+      .substring(2) +
+    "." +
+    extension;
+
+
+  const {error} =
+    await db.storage
+      .from("post-images")
+      .upload(
+        fileName,
+        file,
+        {
+          cacheControl:"3600",
+          upsert:false
+        }
+      );
+
+
+  if(error){
+
+    console.error(error);
+
+    throw new Error(
+      "Не удалось загрузить фотографию: "+
+      error.message
+    );
+
+  }
+
+
+  const {data} =
+    db.storage
+      .from("post-images")
+      .getPublicUrl(fileName);
+
+
+  return data.publicUrl;
+
+}
+
+
+/* =====================================================
+   CREATE POST
+===================================================== */
+
+async function createPost(){
+
+  const text =
+    document.getElementById("postText")
+      .value.trim();
+
+
+  if(!text && !selectedPhoto){
+
+    alert(
+      "Добавьте текст или фотографию"
+    );
+
+    return;
+
+  }
+
+
+  const button =
+    document.querySelector(
+      ".create-post .primary"
+    );
+
+
+  button.disabled=true;
+  button.textContent="Публикация...";
+
+
+  try{
+
+    let image_url=null;
+
+
+    if(selectedPhoto){
+
+      image_url =
+        await uploadPostPhoto(
+          selectedPhoto
+        );
+
+    }
+
+
+    const {error} =
+      await db
+        .from("posts")
+        .insert({
+
+          user_id:currentUser.id,
+          content:text,
+          image_url
+
+        });
+
+
+    if(error){
+
+      throw new Error(
+        error.message
+      );
+
+    }
+
+
+    document.getElementById(
+      "postText"
+    ).value="";
+
+
+    removePhoto();
+
+    await loadFeed();
+
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "Ошибка публикации:\n"+
+      error.message
+    );
+
+  }finally{
+
+    button.disabled=false;
+    button.textContent="Опубликовать";
+
+  }
 
 }
 
@@ -1924,10 +2322,12 @@ async function loadFeed(){
   const container =
     document.getElementById("feed");
 
+
   container.innerHTML=
     `<div class="loading">
       Загрузка...
     </div>`;
+
 
   const {data,error} =
     await db
@@ -1947,19 +2347,28 @@ async function loadFeed(){
       )
       .limit(50);
 
+
   if(error){
 
     console.error(error);
 
+
     container.innerHTML=
       `<div class="empty">
-        Не удалось загрузить ленту.
+
+        Ошибка загрузки публикаций.
+
         <br><br>
-        Проверьте таблицу posts и RLS в Supabase.
+
+        ${escapeHtml(error.message)}
+
       </div>`;
 
+
     return;
+
   }
+
 
   if(!data || !data.length){
 
@@ -1969,58 +2378,21 @@ async function loadFeed(){
       </div>`;
 
     return;
+
   }
+
 
   container.innerHTML="";
 
+
   for(const post of data){
 
-    const postElement =
+    const element =
       await createPostElement(post);
 
-    container.appendChild(
-      postElement
-    );
+    container.appendChild(element);
 
   }
-
-}
-
-
-/* =====================================================
-   CREATE POST
-===================================================== */
-
-async function createPost(){
-
-  const input =
-    document.getElementById("postText");
-
-  const content =
-    input.value.trim();
-
-  if(!content)return;
-
-  const {error} =
-    await db
-      .from("posts")
-      .insert({
-
-        user_id:currentUser.id,
-        content
-
-      });
-
-  if(error){
-
-    alert(error.message);
-
-    return;
-  }
-
-  input.value="";
-
-  await loadFeed();
 
 }
 
@@ -2034,15 +2406,19 @@ async function createPostElement(post){
   const div =
     document.createElement("article");
 
+
   div.className="post";
+
 
   const profile =
     post.profiles || {};
+
 
   const name =
     profile.full_name ||
     profile.username ||
     "Пользователь";
+
 
   const avatar =
     profile.avatar_url
@@ -2051,14 +2427,26 @@ async function createPostElement(post){
           name.charAt(0).toUpperCase()
         );
 
-  const time =
-    formatDate(post.created_at);
 
   const likes =
     await getLikes(post.id);
 
+
   const liked =
     await userLiked(post.id);
+
+
+  const image =
+    post.image_url
+      ? `
+        <img
+          class="post-image"
+          src="${escapeHtml(post.image_url)}"
+          alt="Фото публикации"
+          loading="lazy">
+        `
+      : "";
+
 
   div.innerHTML=`
 
@@ -2075,16 +2463,27 @@ async function createPostElement(post){
         </div>
 
         <div class="post-time">
-          ${time}
+          ${formatDate(post.created_at)}
         </div>
 
       </div>
 
     </div>
 
-    <div class="post-content">
-      ${escapeHtml(post.content)}
-    </div>
+
+    ${
+      post.content
+        ? `
+          <div class="post-content">
+            ${escapeHtml(post.content)}
+          </div>
+        `
+        : ""
+    }
+
+
+    ${image}
+
 
     <div class="post-actions">
 
@@ -2096,6 +2495,7 @@ async function createPostElement(post){
 
       </button>
 
+
       <button
         class="action"
         onclick="showComments(${post.id})">
@@ -2106,12 +2506,14 @@ async function createPostElement(post){
 
     </div>
 
+
     <div
       id="comments-${post.id}"
-      style="margin-top:10px">
+      style="padding:0 10px 10px">
     </div>
 
   `;
+
 
   return div;
 
@@ -2127,8 +2529,18 @@ async function getLikes(postId){
   const {count} =
     await db
       .from("post_likes")
-      .select("*",{count:"exact",head:true})
-      .eq("post_id",postId);
+      .select(
+        "*",
+        {
+          count:"exact",
+          head:true
+        }
+      )
+      .eq(
+        "post_id",
+        postId
+      );
+
 
   return count || 0;
 
@@ -2141,9 +2553,16 @@ async function userLiked(postId){
     await db
       .from("post_likes")
       .select("id")
-      .eq("post_id",postId)
-      .eq("user_id",currentUser.id)
+      .eq(
+        "post_id",
+        postId
+      )
+      .eq(
+        "user_id",
+        currentUser.id
+      )
       .maybeSingle();
+
 
   return !!data;
 
@@ -2154,6 +2573,7 @@ async function toggleLike(postId){
 
   const liked =
     await userLiked(postId);
+
 
   if(liked){
 
@@ -2176,6 +2596,7 @@ async function toggleLike(postId){
 
   }
 
+
   await loadFeed();
 
 }
@@ -2192,9 +2613,12 @@ async function showComments(postId){
       "comments-"+postId
     );
 
-  if(!box)return;
 
-  const {data} =
+  if(!box)
+    return;
+
+
+  const {data,error} =
     await db
       .from("comments")
       .select(`
@@ -2204,10 +2628,27 @@ async function showComments(postId){
           full_name
         )
       `)
-      .eq("post_id",postId)
+      .eq(
+        "post_id",
+        postId
+      )
       .order("created_at");
 
+
+  if(error){
+
+    box.innerHTML=
+      `<div style="color:#777">
+        ${escapeHtml(error.message)}
+      </div>`;
+
+    return;
+
+  }
+
+
   box.innerHTML="";
+
 
   if(data && data.length){
 
@@ -2218,17 +2659,24 @@ async function showComments(postId){
         comment.profiles?.username ||
         "Пользователь";
 
+
       const item =
         document.createElement("div");
+
 
       item.style.cssText=
         "padding:9px 0;border-top:1px solid #191919;font-size:13px";
 
+
       item.innerHTML=
-        `<b>${escapeHtml(name)}</b>
-         <span style="color:#aaa">
-         ${escapeHtml(comment.content)}
-         </span>`;
+        `<b>
+          ${escapeHtml(name)}
+        </b>
+
+        <span style="color:#aaa">
+          ${escapeHtml(comment.content)}
+        </span>`;
+
 
       box.appendChild(item);
 
@@ -2236,38 +2684,62 @@ async function showComments(postId){
 
   }
 
+
   const input =
     document.createElement("input");
 
+
   input.className="input";
-  input.placeholder="Написать комментарий...";
+
+  input.placeholder=
+    "Написать комментарий...";
+
   input.style.marginTop="8px";
+
 
   const button =
     document.createElement("button");
 
+
   button.className="outline";
+
   button.textContent="Отправить";
+
 
   button.onclick=async()=>{
 
-    const text=input.value.trim();
+    const content =
+      input.value.trim();
 
-    if(!text)return;
 
-    await db
-      .from("comments")
-      .insert({
+    if(!content)
+      return;
 
-        post_id:postId,
-        user_id:currentUser.id,
-        content:text
 
-      });
+    const {error} =
+      await db
+        .from("comments")
+        .insert({
+
+          post_id:postId,
+          user_id:currentUser.id,
+          content
+
+        });
+
+
+    if(error){
+
+      alert(error.message);
+      return;
+
+    }
+
 
     showComments(postId);
 
   };
+
 
   box.appendChild(input);
   box.appendChild(button);
@@ -2282,92 +2754,135 @@ async function showComments(postId){
 async function loadPeople(){
 
   const container =
-    document.getElementById("peopleList");
+    document.getElementById(
+      "peopleList"
+    );
+
+
+  if(!container)
+    return;
+
 
   container.innerHTML=
     `<div class="loading">
       Загрузка...
     </div>`;
 
+
   const {data,error} =
     await db
       .from("profiles")
       .select("*")
-      .neq("id",currentUser.id)
-      .order("created_at",{ascending:false})
+      .neq(
+        "id",
+        currentUser.id
+      )
+      .order(
+        "created_at",
+        {ascending:false}
+      )
       .limit(100);
+
 
   if(error){
 
-    console.error(error);
-
     container.innerHTML=
       `<div class="empty">
-        Ошибка загрузки пользователей.
+        ${escapeHtml(error.message)}
       </div>`;
 
     return;
+
   }
 
-  const age =
-    document.getElementById("ageFilter")
-      .value;
 
-  const gender =
-    document.getElementById("genderFilter")
-      .value;
+  const ageFilter =
+    document.getElementById(
+      "ageFilter"
+    ).value;
 
-  const now =
+
+  const genderFilter =
+    document.getElementById(
+      "genderFilter"
+    ).value;
+
+
+  const year =
     new Date().getFullYear();
+
 
   let users =
     data.filter(user=>{
 
-      if(gender &&
-         user.gender!==gender){
+      if(
+        genderFilter &&
+        user.gender!==genderFilter
+      ){
 
         return false;
 
       }
 
-      if(age){
 
-        if(!user.birth_year){
-          return false;
-        }
+      if(ageFilter){
 
-        const userAge =
-          now-user.birth_year;
-
-        if(age==="13-15" &&
-           !(userAge>=13 && userAge<=15))
+        if(!user.birth_year)
           return false;
 
-        if(age==="16-18" &&
-           !(userAge>=16 && userAge<=18))
+
+        const age =
+          year-user.birth_year;
+
+
+        if(
+          ageFilter==="13-15" &&
+          !(age>=13 && age<=15)
+        )
           return false;
 
-        if(age==="19-22" &&
-           !(userAge>=19 && userAge<=22))
+
+        if(
+          ageFilter==="16-18" &&
+          !(age>=16 && age<=18)
+        )
           return false;
 
-        if(age==="23-30" &&
-           !(userAge>=23 && userAge<=30))
+
+        if(
+          ageFilter==="19-22" &&
+          !(age>=19 && age<=22)
+        )
           return false;
 
-        if(age==="31-40" &&
-           !(userAge>=31 && userAge<=40))
+
+        if(
+          ageFilter==="23-30" &&
+          !(age>=23 && age<=30)
+        )
           return false;
 
-        if(age==="41+" &&
-           userAge<41)
+
+        if(
+          ageFilter==="31-40" &&
+          !(age>=31 && age<=40)
+        )
+          return false;
+
+
+        if(
+          ageFilter==="41+" &&
+          age<41
+        )
           return false;
 
       }
 
+
       return true;
 
     });
+
 
   if(!users.length){
 
@@ -2377,9 +2892,12 @@ async function loadPeople(){
       </div>`;
 
     return;
+
   }
 
+
   container.innerHTML="";
+
 
   for(const user of users){
 
@@ -2393,26 +2911,26 @@ async function loadPeople(){
 }
 
 
-/* =====================================================
-   PERSON
-===================================================== */
-
 async function createPersonElement(user){
 
   const div =
     document.createElement("div");
 
+
   div.className="person";
+
 
   const name =
     user.full_name ||
     user.username;
 
+
   const age =
     user.birth_year
-      ? new Date().getFullYear()-
+      ? new Date().getFullYear() -
         user.birth_year
       : null;
+
 
   const avatar =
     user.avatar_url
@@ -2421,10 +2939,13 @@ async function createPersonElement(user){
           name.charAt(0).toUpperCase()
         );
 
+
   const friendship =
     await getFriendship(user.id);
 
+
   let action="";
+
 
   if(!friendship){
 
@@ -2435,7 +2956,9 @@ async function createPersonElement(user){
         Добавить
       </button>`;
 
-  }else if(friendship.status==="accepted"){
+  }else if(
+    friendship.status==="accepted"
+  ){
 
     action=
       `<button
@@ -2452,6 +2975,7 @@ async function createPersonElement(user){
       </button>`;
 
   }
+
 
   div.innerHTML=`
 
@@ -2471,9 +2995,10 @@ async function createPersonElement(user){
 
         ${age ? " · "+age+" лет":""}
 
-        ${user.gender
-          ? " · "+genderText(user.gender)
-          :""
+        ${
+          user.gender
+            ? " · "+genderText(user.gender)
+            : ""
         }
 
       </div>
@@ -2481,12 +3006,11 @@ async function createPersonElement(user){
     </div>
 
     <div class="person-actions">
-
       ${action}
-
     </div>
 
   `;
+
 
   return div;
 
@@ -2508,6 +3032,7 @@ async function getFriendship(userId){
       )
       .maybeSingle();
 
+
   return data;
 
 }
@@ -2518,11 +3043,10 @@ async function addFriend(userId){
   const existing =
     await getFriendship(userId);
 
-  if(existing){
 
+  if(existing)
     return;
 
-  }
 
   const {error} =
     await db
@@ -2535,12 +3059,14 @@ async function addFriend(userId){
 
       });
 
+
   if(error){
 
     alert(error.message);
-
     return;
+
   }
+
 
   alert("Заявка отправлена");
 
@@ -2556,17 +3082,32 @@ async function addFriend(userId){
 async function loadFriends(){
 
   const requestsBox =
-    document.getElementById("requests");
+    document.getElementById(
+      "requests"
+    );
+
 
   const friendsBox =
-    document.getElementById("friends");
+    document.getElementById(
+      "friends"
+    );
+
+
+  if(!requestsBox ||
+     !friendsBox)
+    return;
+
 
   requestsBox.innerHTML=
-    `<div class="loading">Загрузка...</div>`;
+    `<div class="loading">
+      Загрузка...
+    </div>`;
+
 
   friendsBox.innerHTML="";
 
-  const {data:requests} =
+
+  const {data:requests,error} =
     await db
       .from("friendships")
       .select(`
@@ -2578,71 +3119,97 @@ async function loadFriends(){
           avatar_url
         )
       `)
-      .eq("receiver_id",currentUser.id)
-      .eq("status","pending");
+      .eq(
+        "receiver_id",
+        currentUser.id
+      )
+      .eq(
+        "status",
+        "pending"
+      );
 
-  requestsBox.innerHTML="";
 
-  if(!requests || !requests.length){
+  if(error){
+
+    console.error(error);
 
     requestsBox.innerHTML=
-      `<div style="color:#666;font-size:13px">
-        Нет новых заявок.
+      `<div class="empty">
+        Не удалось загрузить заявки.
       </div>`;
 
   }else{
 
-    requests.forEach(request=>{
+    requestsBox.innerHTML="";
 
-      const user =
-        request.profiles;
 
-      const name =
-        user.full_name ||
-        user.username;
+    if(!requests.length){
 
-      const div =
-        document.createElement("div");
+      requestsBox.innerHTML=
+        `<div style="color:#666;font-size:13px">
+          Нет новых заявок.
+        </div>`;
 
-      div.className="friend";
+    }else{
 
-      div.innerHTML=`
+      requests.forEach(request=>{
 
-        <div class="avatar">
+        const user =
+          request.profiles;
 
-          ${
-            user.avatar_url
-              ? `<img src="${escapeHtml(user.avatar_url)}">`
-              : escapeHtml(
-                  name.charAt(0).toUpperCase()
-                )
-          }
 
-        </div>
+        const name =
+          user.full_name ||
+          user.username;
 
-        <div class="friend-info">
 
-          <div class="friend-name">
-            ${escapeHtml(name)}
+        const div =
+          document.createElement("div");
+
+
+        div.className="friend";
+
+
+        div.innerHTML=`
+
+          <div class="avatar">
+
+            ${
+              user.avatar_url
+                ? `<img src="${escapeHtml(user.avatar_url)}">`
+                : escapeHtml(
+                    name.charAt(0).toUpperCase()
+                  )
+            }
+
           </div>
 
-          <div class="friend-username">
-            @${escapeHtml(user.username)}
+          <div class="friend-info">
+
+            <div class="friend-name">
+              ${escapeHtml(name)}
+            </div>
+
+            <div class="friend-username">
+              @${escapeHtml(user.username)}
+            </div>
+
           </div>
 
-        </div>
+          <button
+            class="outline"
+            onclick="acceptFriend(${request.id})">
+            Принять
+          </button>
 
-        <button
-          class="outline"
-          onclick="acceptFriend(${request.id})">
-          Принять
-        </button>
+        `;
 
-      `;
 
-      requestsBox.appendChild(div);
+        requestsBox.appendChild(div);
 
-    });
+      });
+
+    }
 
   }
 
@@ -2659,12 +3226,17 @@ async function loadFriends(){
           id,username,full_name,avatar_url
         )
       `)
-      .eq("status","accepted")
+      .eq(
+        "status",
+        "accepted"
+      )
       .or(
         `sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`
       );
 
-  if(!friends || !friends.length){
+
+  if(!friends ||
+     !friends.length){
 
     friendsBox.innerHTML=
       `<div style="color:#666;font-size:13px">
@@ -2672,7 +3244,9 @@ async function loadFriends(){
       </div>`;
 
     return;
+
   }
+
 
   friends.forEach(friend=>{
 
@@ -2681,14 +3255,18 @@ async function loadFriends(){
         ? friend.receiver
         : friend.sender;
 
+
     const name =
       user.full_name ||
       user.username;
 
+
     const div =
       document.createElement("div");
 
+
     div.className="friend";
+
 
     div.innerHTML=`
 
@@ -2724,6 +3302,7 @@ async function loadFriends(){
 
     `;
 
+
     friendsBox.appendChild(div);
 
   });
@@ -2733,12 +3312,22 @@ async function loadFriends(){
 
 async function acceptFriend(id){
 
-  await db
-    .from("friendships")
-    .update({
-      status:"accepted"
-    })
-    .eq("id",id);
+  const {error} =
+    await db
+      .from("friendships")
+      .update({
+        status:"accepted"
+      })
+      .eq("id",id);
+
+
+  if(error){
+
+    alert(error.message);
+    return;
+
+  }
+
 
   loadFriends();
 
@@ -2758,17 +3347,25 @@ async function openChat(userId){
       .eq("id",userId)
       .single();
 
-  if(!user)return;
+
+  if(!user)
+    return;
+
 
   activeChatUser=user;
 
+
   document
     .querySelectorAll(".page")
-    .forEach(p=>p.classList.remove("active"));
+    .forEach(page=>{
+      page.classList.remove("active");
+    });
+
 
   document
     .getElementById("page-chat")
     .classList.add("active");
+
 
   document.getElementById(
     "chatName"
@@ -2776,10 +3373,12 @@ async function openChat(userId){
     user.full_name ||
     user.username;
 
+
   setAvatar(
     document.getElementById("chatAvatar"),
     user
   );
+
 
   await loadMessages();
 
@@ -2788,7 +3387,9 @@ async function openChat(userId){
 
 async function loadMessages(){
 
-  if(!activeChatUser)return;
+  if(!activeChatUser)
+    return;
+
 
   const {data,error} =
     await db
@@ -2802,17 +3403,23 @@ async function loadMessages(){
         {ascending:true}
       );
 
+
   const box =
-    document.getElementById("messages");
+    document.getElementById(
+      "messages"
+    );
+
 
   box.innerHTML="";
+
 
   if(error){
 
     console.error(error);
-
     return;
+
   }
+
 
   if(!data || !data.length){
 
@@ -2822,7 +3429,9 @@ async function loadMessages(){
       </div>`;
 
     return;
+
   }
+
 
   data.forEach(message=>{
 
@@ -2830,12 +3439,19 @@ async function loadMessages(){
       message.sender_id===
       currentUser.id;
 
+
     const row =
       document.createElement("div");
 
+
     row.className=
       "message-row "+
-      (mine?"mine":"");
+      (
+        mine
+          ? "mine"
+          : ""
+      );
+
 
     row.innerHTML=`
 
@@ -2851,9 +3467,11 @@ async function loadMessages(){
 
     `;
 
+
     box.appendChild(row);
 
   });
+
 
   box.scrollTop=
     box.scrollHeight;
@@ -2863,17 +3481,26 @@ async function loadMessages(){
 
 async function sendMessage(){
 
-  if(!activeChatUser)return;
+  if(!activeChatUser)
+    return;
+
 
   const input =
-    document.getElementById("messageInput");
+    document.getElementById(
+      "messageInput"
+    );
+
 
   const content =
     input.value.trim();
 
-  if(!content)return;
+
+  if(!content)
+    return;
+
 
   input.value="";
+
 
   const {error} =
     await db
@@ -2886,6 +3513,7 @@ async function sendMessage(){
 
       });
 
+
   if(error){
 
     alert(error.message);
@@ -2893,7 +3521,9 @@ async function sendMessage(){
     input.value=content;
 
     return;
+
   }
+
 
   await loadMessages();
 
@@ -2904,9 +3534,11 @@ function closeChat(){
 
   activeChatUser=null;
 
+
   document
     .getElementById("page-chat")
     .classList.remove("active");
+
 
   document
     .getElementById("page-feed")
@@ -2929,9 +3561,12 @@ function subscribeRealtime(){
 
   }
 
+
   realtimeChannel =
     db
-      .channel("social-realtime-"+currentUser.id)
+      .channel(
+        "social-"+currentUser.id
+      )
 
       .on(
         "postgres_changes",
@@ -2942,19 +3577,7 @@ function subscribeRealtime(){
         },
         payload=>{
 
-          if(
-            activeChatUser &&
-            (
-              payload.new?.sender_id===
-                activeChatUser.id ||
-              payload.new?.receiver_id===
-                activeChatUser.id ||
-              payload.old?.sender_id===
-                activeChatUser.id ||
-              payload.old?.receiver_id===
-                activeChatUser.id
-            )
-          ){
+          if(activeChatUser){
 
             loadMessages();
 
@@ -3008,9 +3631,12 @@ function closeSettings(){
 
 function escapeHtml(value){
 
-  if(value===null ||
-     value===undefined)
+  if(
+    value===null ||
+    value===undefined
+  )
     return "";
+
 
   return String(value)
     .replace(/&/g,"&amp;")
@@ -3024,17 +3650,15 @@ function escapeHtml(value){
 
 function formatDate(date){
 
-  const d =
-    new Date(date);
-
-  return d.toLocaleDateString(
-    "ru-RU",
-    {
-      day:"numeric",
-      month:"short",
-      year:"numeric"
-    }
-  );
+  return new Date(date)
+    .toLocaleDateString(
+      "ru-RU",
+      {
+        day:"numeric",
+        month:"short",
+        year:"numeric"
+      }
+    );
 
 }
 
@@ -3056,4 +3680,3 @@ function formatTime(date){
 
 </body>
 </html>
-```
