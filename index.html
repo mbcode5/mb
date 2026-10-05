@@ -1,695 +1,211 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="light">
+<html lang="ru" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Social Chat Mobile</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --bg: #f4f6f9;
-      --surface: #ffffff;
-      --text: #0f172a;
-      --subtext: #64748b;
-      --border: #e2e8f0;
-      --input-bg: #f1f5f9;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --accent: #3b82f6;
-      --msg-my: #2563eb;
-      --msg-my-text: #ffffff;
-      --msg-their: #e2e8f0;
-      --msg-their-text: #0f172a;
-      --shadow: 0 10px 25px -5px rgba(0,0,0,0.08);
-      --modal-bg: rgba(15, 23, 42, 0.6);
-    }
-
-    [data-theme="dark"] {
-      --bg: #0f172a;
-      --surface: #1e293b;
-      --text: #f8fafc;
-      --subtext: #94a3b8;
-      --border: #334155;
-      --input-bg: #334155;
-      --primary: #3b82f6;
-      --primary-hover: #60a5fa;
-      --accent: #60a5fa;
-      --msg-my: #2563eb;
-      --msg-my-text: #ffffff;
-      --msg-their: #334155;
-      --msg-their-text: #f8fafc;
-      --shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
-      --modal-bg: rgba(0, 0, 0, 0.8);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-    html, body { height: 100%; height: 100dvh; width: 100%; background-color: var(--bg); color: var(--text); overflow: hidden; }
-
-    /* Мобильный контейнер */
-    .app-container { display: flex; flex-direction: column; height: 100%; height: 100dvh; max-width: 500px; margin: 0 auto; background: var(--surface); position: relative; box-shadow: var(--shadow); }
-
-    /* Шапка */
-    .app-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--surface); }
-    .app-header h2 { font-size: 19px; font-weight: 700; color: var(--primary); }
-
-    /* Нижняя Навигация */
-    .nav-bar { display: flex; justify-content: space-around; background: var(--surface); border-top: 1px solid var(--border); padding: 8px 0; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
-    .nav-item { background: transparent; border: none; color: var(--subtext); font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; transition: all 0.2s; }
-    .nav-item.active { color: var(--primary); }
-    .nav-item span { font-size: 11px; }
-
-    /* Содержимое */
-    .view-content { flex: 1; overflow-y: auto; padding: 14px; display: none; flex-direction: column; }
-    .view-content.active { display: flex; }
-
-    /* Элементы Чата */
-    .chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); border-radius: 16px; margin-bottom: 10px; }
-    .msg-group { display: flex; flex-direction: column; max-width: 80%; }
-    .msg-group.my { align-self: flex-end; align-items: flex-end; }
-    .msg-group.their { align-self: flex-start; align-items: flex-start; }
-    .msg-meta { font-size: 10px; color: var(--subtext); margin-bottom: 3px; font-weight: 600; }
-    .msg-bubble { padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; word-break: break-word; }
-    .msg-group.my .msg-bubble { background: var(--msg-my); color: var(--msg-my-text); border-bottom-right-radius: 4px; }
-    .msg-group.their .msg-bubble { background: var(--msg-their); color: var(--msg-their-text); border-bottom-left-radius: 4px; }
-
-    .input-bar { display: flex; gap: 8px; }
-    .input-bar input, .custom-input { flex: 1; padding: 11px 16px; border-radius: 22px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); outline: none; font-size: 14px; }
-    
-    .btn { padding: 9px 16px; border-radius: 20px; border: none; font-weight: 600; cursor: pointer; background: var(--primary); color: white; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; }
-    .btn:active { opacity: 0.8; }
-    .btn-secondary { background: #10b981; color: white; }
-    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-    .btn-danger { background: #ef4444; color: white; }
-    .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 14px; }
-
-    /* Карточки пользователей и диалогов */
-    .user-card { display: flex; align-items: center; justify-content: space-between; background: var(--surface); padding: 12px; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 10px; cursor: pointer; transition: transform 0.1s, background-color 0.2s; }
-    .user-card:active { transform: scale(0.98); }
-    .user-info-block { display: flex; align-items: center; gap: 12px; flex: 1; overflow: hidden; }
-    
-    .avatar-img { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(37,99,235,0.2); }
-
-    /* Модальные окна */
-    .modal-backdrop { position: fixed; inset: 0; background: var(--modal-bg); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
-    .modal { background: var(--surface); padding: 22px; border-radius: 20px; width: 100%; max-width: 380px; border: 1px solid var(--border); box-shadow: var(--shadow); }
-
-    /* Дизайн Профиля */
-    .profile-header-card { text-align: center; padding: 16px; background: var(--input-bg); border-radius: 16px; margin-bottom: 16px; }
-    .profile-avatar-lg { width: 84px; height: 84px; font-size: 32px; margin: 0 auto 12px auto; }
-    .profile-bio-box { background: var(--surface); padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-top: 10px; font-size: 13px; color: var(--subtext); text-align: left; }
-
-    .hidden { display: none !important; }
-    .auth-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 500; padding: 16px; }
-    .auth-card { background: var(--surface); padding: 26px; border-radius: 20px; width: 100%; max-width: 360px; border: 1px solid var(--border); box-shadow: var(--shadow); }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MB — Social</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+ --bg:#0b0d10;--surface:#111419;--surface2:#171b21;--text:#f5f7fa;--muted:#8c96a5;
+ --line:#252b34;--primary:#3b82f6;--primary2:#60a5fa;--danger:#ef4444;--ok:#22c55e;
+ --shadow:0 12px 40px rgba(0,0,0,.28);--radius:18px;
+}
+[data-theme=light]{--bg:#f3f5f8;--surface:#fff;--surface2:#f7f8fa;--text:#111827;--muted:#667085;--line:#e4e7ec;--shadow:0 12px 35px rgba(16,24,40,.08)}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden}
+button,input,textarea{font:inherit}button{cursor:pointer}
+.hidden{display:none!important}
+.app{height:100dvh;display:grid;grid-template-columns:250px minmax(0,680px) 290px;max-width:1400px;margin:auto;background:var(--bg)}
+.sidebar,.rightbar{padding:22px 16px;border-right:1px solid var(--line);background:var(--surface)}
+.rightbar{border-right:0;border-left:1px solid var(--line)}
+.brand{font-size:24px;font-weight:900;letter-spacing:-1px;margin:4px 10px 28px}
+.brand span{color:var(--primary)}
+.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;color:var(--muted);padding:13px 14px;border-radius:13px;text-align:left;font-weight:700;font-size:15px}
+.nav button:hover,.nav button.active{background:var(--surface2);color:var(--text)}
+.nav button.active{color:var(--primary)}
+.side-profile{margin-top:auto;border-top:1px solid var(--line);padding-top:16px;display:flex;align-items:center;gap:10px}
+.avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;background:linear-gradient(135deg,#2563eb,#7c3aed);display:grid;place-items:center;color:#fff;font-weight:800;overflow:hidden;flex:none}
+.avatar img{width:100%;height:100%;object-fit:cover}.avatar.sm{width:34px;height:34px}.avatar.lg{width:86px;height:86px;font-size:30px}
+.main{min-width:0;overflow-y:auto;border-right:1px solid var(--line)}
+.top{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:15px 18px;background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:blur(15px);border-bottom:1px solid var(--line)}
+.top h2{font-size:18px}.iconbtn{border:1px solid var(--line);background:var(--surface2);color:var(--text);width:38px;height:38px;border-radius:50%}
+.content{padding:16px}.view{display:none}.view.active{display:block}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px}
+.composer{padding:14px}.composer-row{display:flex;gap:10px}.composer textarea{flex:1;resize:none;min-height:58px;max-height:150px;border:0;background:var(--surface2);color:var(--text);border-radius:15px;padding:13px;outline:0}
+.actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px}.action-links{display:flex;gap:4px}.mini{border:0;background:transparent;color:var(--muted);padding:8px;border-radius:10px}.mini:hover{background:var(--surface2);color:var(--text)}
+.btn{border:0;border-radius:12px;background:var(--primary);color:#fff;padding:10px 15px;font-weight:750}.btn:hover{background:var(--primary2)}.btn.outline{background:transparent;color:var(--text);border:1px solid var(--line)}.btn.danger{background:var(--danger)}
+.post{overflow:hidden}.post-head{display:flex;gap:10px;align-items:center;padding:14px}.post-author{font-weight:800}.post-time{font-size:11px;color:var(--muted)}.post-menu{margin-left:auto}.post-body{padding:0 14px 12px;line-height:1.5;white-space:pre-wrap;word-break:break-word}.post-image{width:100%;max-height:560px;object-fit:cover;display:block}.post-stats{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;padding:9px 14px;border-top:1px solid var(--line)}.post-actions{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}.post-actions button{border:0;background:transparent;color:var(--muted);padding:11px}.post-actions button:hover,.post-actions button.liked{color:var(--primary);background:var(--surface2)}
+.input{width:100%;padding:12px 14px;background:var(--surface2);color:var(--text);border:1px solid var(--line);border-radius:13px;outline:0}.input:focus{border-color:var(--primary)}
+.search{display:flex;gap:8px;margin-bottom:14px}.search .input{flex:1}
+.user{display:flex;align-items:center;gap:11px;padding:12px;border-bottom:1px solid var(--line)}.user:last-child{border-bottom:0}.user-main{min-width:0;flex:1}.user-main b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.muted{color:var(--muted);font-size:12px}
+.right-title{font-weight:850;margin:3px 8px 12px}.trend{padding:12px;border-bottom:1px solid var(--line)}.trend small{color:var(--muted)}.trend b{display:block;margin:4px 0}
+.profile-cover{height:125px;background:linear-gradient(120deg,#172554,#312e81,#111827);border-radius:18px 18px 0 0}.profile-main{padding:0 18px 18px}.profile-main .avatar{margin-top:-43px;border:4px solid var(--surface)}.profile-name{font-size:22px;font-weight:900;margin-top:8px}.bio{color:var(--muted);margin:5px 0 14px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:grid;place-items:center;z-index:100;padding:16px}.modal{width:min(500px,100%);max-height:90dvh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:var(--shadow)}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.auth{position:fixed;inset:0;background:radial-gradient(circle at 50% 0,#172554,var(--bg) 45%);display:grid;place-items:center;padding:18px;z-index:200}.auth-card{width:min(420px,100%);background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:var(--shadow)}.auth-logo{font-size:34px;font-weight:950;margin-bottom:8px}.auth-logo span{color:var(--primary)}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;background:var(--surface2);padding:4px;border-radius:12px;margin:20px 0}.tabs button{border:0;background:transparent;color:var(--muted);padding:10px;border-radius:9px}.tabs button.active{background:var(--surface);color:var(--text)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#111827;color:white;padding:11px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:.25s;z-index:300}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.chat{height:calc(100dvh - 70px);display:flex;flex-direction:column}.chat-list{overflow:auto}.chat-window{flex:1;display:flex;flex-direction:column;min-height:0}.messages{flex:1;overflow:auto;padding:15px;background:var(--bg)}.bubble{max-width:78%;padding:9px 12px;border-radius:16px;margin:5px 0;line-height:1.4;word-break:break-word}.mine{margin-left:auto;background:var(--primary);color:#fff;border-bottom-right-radius:4px}.theirs{background:var(--surface2);border:1px solid var(--line);border-bottom-left-radius:4px}.chat-input{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);background:var(--surface)}
+@media(max-width:1050px){.app{grid-template-columns:74px minmax(0,680px)}.sidebar{padding:18px 9px}.brand{font-size:0;text-align:center}.brand span{font-size:23px}.nav button{font-size:0;text-align:center}.nav button::first-letter{font-size:21px}.side-profile{display:none}.rightbar{display:none}}
+@media(max-width:700px){body{background:var(--surface)}.app{display:block;max-width:none}.sidebar{position:fixed;bottom:0;left:0;right:0;height:65px;z-index:30;border:0;border-top:1px solid var(--line);padding:5px 4px}.brand{display:none}.nav{display:grid;grid-template-columns:repeat(5,1fr);height:100%}.nav button{font-size:10px;padding:6px 2px;text-align:center}.main{height:100dvh;border:0;padding-bottom:65px}.content{padding:10px}.top{padding:11px 13px}.card{border-radius:15px}.post{margin-bottom:10px}.composer{padding:10px}.auth-card{padding:22px}}
+</style>
 </head>
 <body>
+<div id="auth" class="auth">
+ <div class="auth-card">
+  <div class="auth-logo">MB<span>.</span></div><div class="muted">Социальная сеть нового поколения</div>
+  <div class="tabs"><button id="loginTab" class="active" onclick="authTab('login')">Войти</button><button id="regTab" onclick="authTab('reg')">Создать аккаунт</button></div>
+  <div id="loginForm"><input id="loginEmail" class="input" placeholder="Email"><input id="loginPass" class="input" style="margin-top:9px" type="password" placeholder="Пароль"><button class="btn" style="width:100%;margin-top:12px" onclick="login()">Войти</button></div>
+  <div id="regForm" class="hidden"><input id="regName" class="input" placeholder="Имя / ник"><input id="regEmail" class="input" style="margin-top:9px" placeholder="Email"><input id="regPass" class="input" style="margin-top:9px" type="password" placeholder="Пароль (6+)"><button class="btn" style="width:100%;margin-top:12px" onclick="register()">Создать аккаунт</button></div>
+ </div>
+</div>
 
-  <!-- Вход / Регистрация -->
-  <div id="auth-section" class="auth-overlay">
-    <div class="auth-card">
-      <h2 style="text-align: center; margin-bottom: 14px; color: var(--primary); font-size: 22px;">Social Chat</h2>
-      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-        <button id="tab-login-btn" class="btn" style="flex:1;" onclick="switchAuthTab('login')">Вход</button>
-        <button id="tab-reg-btn" class="btn btn-outline" style="flex:1;" onclick="switchAuthTab('reg')">Регистрация</button>
-      </div>
+<div id="app" class="app hidden">
+ <aside class="sidebar">
+  <div class="brand">MB<span>.</span></div>
+  <nav class="nav">
+   <button class="active" data-view="home" onclick="go('home')">⌂ Главная</button>
+   <button data-view="search" onclick="go('search')">⌕ Поиск</button>
+   <button data-view="friends" onclick="go('friends')">♙ Друзья</button>
+   <button data-view="messages" onclick="go('messages')">✉ Сообщения</button>
+   <button data-view="profile" onclick="go('profile')">● Профиль</button>
+  </nav>
+  <div class="side-profile"><div id="sideAvatar" class="avatar sm">?</div><div style="min-width:0"><b id="sideName">---</b><div class="muted">@<span id="sideUsername">---</span></div></div></div>
+ </aside>
 
-      <div id="login-form">
-        <input type="email" id="login-email" class="custom-input" placeholder="Email" style="width: 100%; margin-bottom: 10px;">
-        <input type="password" id="login-password" class="custom-input" placeholder="Пароль" style="width: 100%; margin-bottom: 12px;">
-        <button class="btn" style="width: 100%; border-radius: 12px;" onclick="login()">Войти</button>
-      </div>
+ <main class="main">
+  <header class="top"><h2 id="title">Главная</h2><button class="iconbtn" onclick="openSettings()">⚙</button></header>
+  <div class="content">
+   <section id="view-home" class="view active">
+    <div class="card composer"><div class="composer-row"><div id="composerAvatar" class="avatar sm">?</div><textarea id="postText" placeholder="Что нового?"></textarea></div><div class="actions"><div class="action-links"><button class="mini" onclick="pickImage()">▣ Фото</button></div><button class="btn" onclick="createPost()">Опубликовать</button></div><input id="postImage" class="hidden" type="file" accept="image/*" onchange="previewImage(this)"><div id="imagePreview" class="hidden" style="margin-top:10px"></div></div>
+    <div id="feed"></div>
+   </section>
 
-      <div id="reg-form" class="hidden">
-        <input type="text" id="reg-username" class="custom-input" placeholder="Имя / Никнейм" style="width: 100%; margin-bottom: 10px;">
-        <input type="email" id="reg-email" class="custom-input" placeholder="Email" style="width: 100%; margin-bottom: 10px;">
-        <input type="password" id="reg-password" class="custom-input" placeholder="Пароль (мин. 6 символов)" style="width: 100%; margin-bottom: 12px;">
-        <button class="btn btn-secondary" style="width: 100%; border-radius: 12px;" onclick="register()">Зарегистрироваться</button>
-      </div>
-    </div>
+   <section id="view-search" class="view">
+    <div class="search"><input id="searchInput" class="input" placeholder="Имя или @username" onkeydown="if(event.key==='Enter')searchUsers()"><button class="btn" onclick="searchUsers()">Найти</button></div><div id="searchResults" class="card"></div>
+   </section>
+
+   <section id="view-friends" class="view">
+    <div class="card"><div style="padding:14px;font-weight:850">Заявки</div><div id="requests"></div></div>
+    <div class="card"><div style="padding:14px;font-weight:850">Друзья</div><div id="friends"></div></div>
+   </section>
+
+   <section id="view-messages" class="view">
+    <div id="chatList" class="card chat-list"></div>
+    <div id="chatWindow" class="chat-window hidden"><div style="padding:10px 0"><button class="btn outline" onclick="closeChat()">← Назад</button> <b id="chatName"></b></div><div id="messages" class="messages card"></div><div class="chat-input"><input id="messageInput" class="input" placeholder="Сообщение..." onkeydown="if(event.key==='Enter')sendMessage()"><button class="btn" onclick="sendMessage()">➤</button></div></div>
+   </section>
+
+   <section id="view-profile" class="view">
+    <div class="card" style="overflow:hidden"><div class="profile-cover"></div><div class="profile-main"><div id="profileAvatar" class="avatar lg">?</div><div id="profileName" class="profile-name">---</div><div id="profileUsername" class="muted">@---</div><div id="profileBio" class="bio">Заполните описание профиля.</div><button class="btn outline" onclick="openEditProfile()">Редактировать профиль</button></div></div>
+    <div id="myPosts"></div>
+   </section>
   </div>
+ </main>
 
-  <!-- Главный Интерфейс -->
-  <div id="app-section" class="app-container hidden">
-    <!-- Шапка -->
-    <div class="app-header">
-      <h2 id="header-title">💬 Чаты</h2>
-      <button class="btn btn-sm btn-outline" onclick="openSettings()">⚙️</button>
-    </div>
-
-    <!-- Вкладка 1: ЧАТЫ (ДИАЛОГИ) -->
-    <div id="view-chats" class="view-content active">
-      <div id="chats-list-screen">
-        <p style="font-size: 12px; color: var(--subtext); margin-bottom: 10px; font-weight: 600;">Ваши переписки</p>
-        <div id="chats-friends-list"></div>
-      </div>
-
-      <div id="active-chat-screen" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <button class="btn btn-sm btn-outline" onclick="closeActiveChat()">← Назад</button>
-          <div style="text-align: center; cursor: pointer;" onclick="viewPartnerProfile()">
-            <b id="active-partner-name" style="font-size: 15px;">---</b>
-            <p style="font-size: 11px; color: var(--primary);">посмотреть профиль</p>
-          </div>
-          <button class="btn btn-danger btn-sm" onclick="clearDmHistory()">🗑️</button>
-        </div>
-        <div id="dm-chat-box" class="chat-messages"></div>
-        <div class="input-bar">
-          <input type="text" id="dm-message-input" placeholder="Сообщение..." onkeydown="if(event.key==='Enter') sendDmMessage()">
-          <button class="btn" onclick="sendDmMessage()">➤</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Вкладка 2: ПОИСК -->
-    <div id="view-search" class="view-content">
-      <div style="display: flex; gap: 8px; margin-bottom: 14px;">
-        <input type="text" id="search-input" class="custom-input" placeholder="Поиск по имени или нику..." onkeydown="if(event.key==='Enter') searchUsers()">
-        <button class="btn" onclick="searchUsers()">Искать</button>
-      </div>
-      <div id="search-results"></div>
-    </div>
-
-    <!-- Вкладка 3: ДРУЗЬЯ -->
-    <div id="view-friends" class="view-content">
-      <h3 style="margin-bottom: 10px; font-size:15px;">Входящие заявки</h3>
-      <div id="incoming-requests" style="margin-bottom: 18px;"></div>
-
-      <h3 style="margin-bottom: 10px; font-size:15px;">Мои друзья</h3>
-      <div id="friends-list"></div>
-    </div>
-
-    <!-- Вкладка 4: МОЙ ПРОФИЛЬ -->
-    <div id="view-profile" class="view-content">
-      <div class="profile-header-card">
-        <div id="my-avatar-display" class="avatar-img profile-avatar-lg">?</div>
-        <h3 id="my-name-display" style="font-size: 18px; font-weight: 700;">---</h3>
-        <p id="my-username-display" style="color: var(--primary); font-size: 13px; margin-top: 2px;">@username</p>
-        <div class="profile-bio-box">
-          <b>О себе:</b>
-          <p id="my-bio-display" style="margin-top: 4px;">Заполните профиль...</p>
-        </div>
-      </div>
-
-      <div style="background: var(--input-bg); padding: 14px; border-radius: 16px;">
-        <h4 style="margin-bottom: 10px; font-size: 14px;">Редактировать профиль</h4>
-        <input type="text" id="edit-fullname" class="custom-input" placeholder="Полное имя" style="width: 100%; margin-bottom: 8px;">
-        <input type="text" id="edit-avatar" class="custom-input" placeholder="Ссылка на аватар (URL)" style="width: 100%; margin-bottom: 8px;">
-        <textarea id="edit-bio" class="custom-input" placeholder="Напишите немного о себе..." style="width: 100%; height: 70px; margin-bottom: 10px;"></textarea>
-        <button class="btn" style="width: 100%; border-radius: 12px;" onclick="saveProfile()">Сохранить профиль</button>
-      </div>
-    </div>
-
-    <!-- Нижняя Навигация -->
-    <div class="nav-bar">
-      <button class="nav-item active" onclick="switchView('chats', this, '💬 Чаты')">💬<span>Чаты</span></button>
-      <button class="nav-item" onclick="switchView('search', this, '🔍 Поиск пользователей')">🔍<span>Поиск</span></button>
-      <button class="nav-item" onclick="switchView('friends', this, '👥 Друзья')">👥<span>Друзья</span></button>
-      <button class="nav-item" onclick="switchView('profile', this, '👤 Мой профиль')">👤<span>Профиль</span></button>
-    </div>
+ <aside class="rightbar">
+  <div class="right-title">В тренде</div>
+  <div class="card">
+   <div class="trend"><small>Социальная сеть</small><b>Добро пожаловать в MB</b><small>Общайтесь и делитесь моментами</small></div>
+   <div class="trend"><small>Ваши друзья</small><b id="friendCount">0 друзей</b><small>Добавляйте людей через поиск</small></div>
   </div>
-
-  <!-- МОДАЛЬНОЕ ОКНО: Просмотр профиля другого пользователя -->
-  <div id="user-profile-modal" class="modal-backdrop hidden">
-    <div class="modal">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-        <h3 style="font-size: 16px;">Профиль пользователя</h3>
-        <button class="btn btn-sm btn-outline" onclick="closeUserProfileModal()">✕</button>
-      </div>
-
-      <div class="profile-header-card" style="margin-bottom: 14px;">
-        <div id="view-user-avatar" class="avatar-img profile-avatar-lg">?</div>
-        <h3 id="view-user-fullname" style="font-size: 18px; font-weight: 700;">---</h3>
-        <p id="view-user-username" style="color: var(--primary); font-size: 13px; margin-top: 2px;">@username</p>
-        <div class="profile-bio-box">
-          <b>О себе:</b>
-          <p id="view-user-bio" style="margin-top: 4px;">Нет описания</p>
-        </div>
-      </div>
-
-      <div id="user-profile-actions" style="display: flex; flex-direction: column; gap: 8px;">
-        <!-- Кнопки действия (Динамические) -->
-      </div>
-    </div>
-  </div>
-
-  <!-- МОДАЛЬНОЕ ОКНО: Настройки -->
-  <div id="settings-modal" class="modal-backdrop hidden">
-    <div class="modal">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-        <h3>⚙️ Настройки</h3>
-        <button class="btn btn-sm btn-outline" onclick="closeSettings()">✕</button>
-      </div>
-      <button class="btn btn-outline" onclick="toggleTheme()" style="width: 100%; margin-bottom: 12px;">☀️ / 🌙 Сменить тему</button>
-      <button class="btn btn-danger" style="width: 100%;" onclick="logout()">🚪 Выйти из аккаунта</button>
-    </div>
-  </div>
-
-  <script>
-    const SUPABASE_URL = "https://pgnmaoybgwesqctysveu.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_TSFvhqldPDdWGncB92rVag_KkdkwlZP";
-
-    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    let currentUser = null;
-    let myProfileData = null;
-    let activeDmPartner = null;
-    let selectedViewingUser = null;
-
-    // --- Тема ---
-    let currentTheme = localStorage.getItem('chat_theme') || 'light';
-    applyTheme(currentTheme);
-
-    function applyTheme(theme) {
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('chat_theme', theme);
-      currentTheme = theme;
-    }
-
-    function toggleTheme() {
-      applyTheme(currentTheme === 'light' ? 'dark' : 'light');
-    }
-
-    // --- Авторизация ---
-    db.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        currentUser = session.user;
-        showApp();
-      } else {
-        currentUser = null;
-        showAuth();
-      }
-    });
-
-    function switchAuthTab(type) {
-      document.getElementById('login-form').classList.toggle('hidden', type !== 'login');
-      document.getElementById('reg-form').classList.toggle('hidden', type !== 'reg');
-    }
-
-    async function login() {
-      const email = document.getElementById('login-email').value.trim();
-      const password = document.getElementById('login-password').value.trim();
-      if (!email || !password) return alert('Заполните все поля!');
-      const { error } = await db.auth.signInWithPassword({ email, password });
-      if (error) alert('Ошибка входа: ' + error.message);
-    }
-
-    async function register() {
-      const username = document.getElementById('reg-username').value.trim();
-      const email = document.getElementById('reg-email').value.trim();
-      const password = document.getElementById('reg-password').value.trim();
-
-      if (!username || !email || !password) return alert('Заполните все поля!');
-
-      const { error } = await db.auth.signUp({
-        email, password, options: { data: { username: username } }
-      });
-
-      if (error) return alert('Ошибка: ' + error.message);
-      await db.auth.signInWithPassword({ email, password });
-    }
-
-    async function logout() {
-      closeSettings();
-      await db.auth.signOut();
-    }
-
-    function showApp() {
-      document.getElementById('auth-section').classList.add('hidden');
-      document.getElementById('app-section').classList.remove('hidden');
-      loadMyProfile();
-      loadChatsList();
-      subscribeRealtime();
-    }
-
-    function showAuth() {
-      document.getElementById('auth-section').classList.remove('hidden');
-      document.getElementById('app-section').classList.add('hidden');
-    }
-
-    // --- Навигация ---
-    function switchView(viewName, btn, title) {
-      document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-
-      document.getElementById(`view-${viewName}`).classList.add('active');
-      if (btn) btn.classList.add('active');
-      if (title) document.getElementById('header-title').innerText = title;
-
-      if (viewName === 'friends') loadFriendsAndRequests();
-      if (viewName === 'search') searchUsers();
-      if (viewName === 'chats') loadChatsList();
-    }
-
-    // --- МОЙ ПРОФИЛЬ ---
-    async function loadMyProfile() {
-      let { data } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
-      
-      if (!data) {
-        const defaultName = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
-        await db.from('profiles').insert([{ id: currentUser.id, username: defaultName, full_name: defaultName }]);
-        data = { id: currentUser.id, username: defaultName, full_name: defaultName };
-      }
-
-      myProfileData = data;
-      document.getElementById('my-name-display').innerText = data.full_name || data.username;
-      document.getElementById('my-username-display').innerText = '@' + data.username;
-      document.getElementById('my-bio-display').innerText = data.bio || 'Описание не заполнено';
-      
-      const avatarBox = document.getElementById('my-avatar-display');
-      if (data.avatar_url) {
-        avatarBox.innerHTML = `<img src="${data.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-      } else {
-        avatarBox.innerText = (data.full_name || data.username).charAt(0).toUpperCase();
-      }
-
-      document.getElementById('edit-fullname').value = data.full_name || '';
-      document.getElementById('edit-avatar').value = data.avatar_url || '';
-      document.getElementById('edit-bio').value = data.bio || '';
-    }
-
-    async function saveProfile() {
-      const full_name = document.getElementById('edit-fullname').value.trim();
-      const avatar_url = document.getElementById('edit-avatar').value.trim();
-      const bio = document.getElementById('edit-bio').value.trim();
-
-      const { error } = await db.from('profiles').update({ full_name, avatar_url, bio }).eq('id', currentUser.id);
-
-      if (error) alert('Ошибка: ' + error.message);
-      else {
-        alert('Профиль сохранен!');
-        loadMyProfile();
-      }
-    }
-
-    // --- ПРОСМОТР ЧУЖОГО ПРОФИЛЯ ---
-    async function openUserProfileModal(userId) {
-      if (userId === currentUser.id) {
-        switchView('profile', document.querySelectorAll('.nav-item')[3], '👤 Мой профиль');
-        return;
-      }
-
-      const { data: profile } = await db.from('profiles').select('*').eq('id', userId).single();
-      if (!profile) return alert('Пользователь не найден');
-
-      selectedViewingUser = profile;
-
-      document.getElementById('view-user-fullname').innerText = profile.full_name || profile.username;
-      document.getElementById('view-user-username').innerText = '@' + profile.username;
-      document.getElementById('view-user-bio').innerText = profile.bio || 'Пользователь ничего не написал о себе';
-
-      const avatarBox = document.getElementById('view-user-avatar');
-      if (profile.avatar_url) {
-        avatarBox.innerHTML = `<img src="${profile.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-      } else {
-        avatarBox.innerText = (profile.full_name || profile.username).charAt(0).toUpperCase();
-      }
-
-      // Проверяем статус дружбы
-      const { data: friendship } = await db.from('friendships')
-        .select('*')
-        .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUser.id})`)
-        .single();
-
-      const actionsContainer = document.getElementById('user-profile-actions');
-      actionsContainer.innerHTML = '';
-
-      // Кнопка переписки
-      const msgBtn = document.createElement('button');
-      msgBtn.className = 'btn';
-      msgBtn.style.width = '100%';
-      msgBtn.innerText = '💬 Написать сообщение';
-      msgBtn.onclick = () => {
-        closeUserProfileModal();
-        openDmWith(profile.id, profile.full_name || profile.username);
-      };
-      actionsContainer.appendChild(msgBtn);
-
-      // Кнопка дружбы
-      if (!friendship) {
-        const addBtn = document.createElement('button');
-        addBtn.className = 'btn btn-secondary';
-        addBtn.style.width = '100%';
-        addBtn.innerText = '+ Добавить в друзья';
-        addBtn.onclick = async () => {
-          await db.from('friendships').insert([{ sender_id: currentUser.id, receiver_id: userId, status: 'pending' }]);
-          alert('Заявка отправлена!');
-          openUserProfileModal(userId);
-        };
-        actionsContainer.appendChild(addBtn);
-      } else if (friendship.status === 'pending') {
-        const pendingBtn = document.createElement('button');
-        pendingBtn.className = 'btn btn-outline';
-        pendingBtn.style.width = '100%';
-        pendingBtn.disabled = true;
-        pendingBtn.innerText = friendship.sender_id === currentUser.id ? 'Заявка отправлена' : 'Ожидает вашего подтверждения';
-        actionsContainer.appendChild(pendingBtn);
-      } else if (friendship.status === 'accepted') {
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'btn btn-danger';
-        removeBtn.style.width = '100%';
-        removeBtn.innerText = 'Удалить из друзей';
-        removeBtn.onclick = async () => {
-          if (confirm('Удалить из друзей?')) {
-            await db.from('friendships').delete().eq('id', friendship.id);
-            openUserProfileModal(userId);
-          }
-        };
-        actionsContainer.appendChild(removeBtn);
-      }
-
-      document.getElementById('user-profile-modal').classList.remove('hidden');
-    }
-
-    function closeUserProfileModal() {
-      document.getElementById('user-profile-modal').classList.add('hidden');
-    }
-
-    function viewPartnerProfile() {
-      if (activeDmPartner) {
-        openUserProfileModal(activeDmPartner.id);
-      }
-    }
-
-    // --- ПОИСК ЛЮДЕЙ ---
-    async function searchUsers() {
-      const query = document.getElementById('search-input').value.trim();
-      let req = db.from('profiles').select('*').neq('id', currentUser.id);
-
-      if (query) {
-        req = req.or(`username.ilike.%${query}%,full_name.ilike.%${query}%`);
-      }
-
-      const { data } = await req.limit(30);
-      const container = document.getElementById('search-results');
-      container.innerHTML = '';
-
-      if (!data || data.length === 0) {
-        container.innerHTML = '<p style="color:var(--subtext); text-align:center; margin-top:20px;">Ничего не найдено</p>';
-        return;
-      }
-
-      data.forEach(user => {
-        const div = document.createElement('div');
-        div.className = 'user-card';
-        div.onclick = () => openUserProfileModal(user.id);
-        div.innerHTML = `
-          <div class="user-info-block">
-            <div class="avatar-img">${user.avatar_url ? `<img src="${user.avatar_url}" style="width:100%;height:100%;border-radius:50%;">` : user.username.charAt(0).toUpperCase()}</div>
-            <div style="overflow:hidden;">
-              <b style="display:block; text-overflow:ellipsis; overflow:hidden; whitespace:nowrap;">${escapeHtml(user.full_name || user.username)}</b>
-              <p style="font-size:12px;color:var(--subtext);">@${escapeHtml(user.username)}</p>
-            </div>
-          </div>
-          <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); openUserProfileModal('${user.id}')">Профиль</button>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    // --- ДРУЗЬЯ ---
-    async function loadFriendsAndRequests() {
-      const { data: requests } = await db.from('friendships')
-        .select('id, sender_id, profiles!friendships_sender_id_fkey(*)')
-        .eq('receiver_id', currentUser.id)
-        .eq('status', 'pending');
-
-      const reqBox = document.getElementById('incoming-requests');
-      reqBox.innerHTML = '';
-
-      if (!requests || requests.length === 0) {
-        reqBox.innerHTML = '<p style="color:var(--subtext);font-size:12px;">Нет новых заявок</p>';
-      } else {
-        requests.forEach(r => {
-          const u = r.profiles;
-          const div = document.createElement('div');
-          div.className = 'user-card';
-          div.onclick = () => openUserProfileModal(u.id);
-          div.innerHTML = `
-            <div class="user-info-block">
-              <div class="avatar-img">${u.avatar_url ? `<img src="${u.avatar_url}" style="width:100%;height:100%;border-radius:50%;">` : u.username.charAt(0).toUpperCase()}</div>
-              <div><b>${escapeHtml(u.full_name || u.username)}</b></div>
-            </div>
-            <div style="display:flex;gap:4px;" onclick="event.stopPropagation()">
-              <button class="btn btn-sm btn-secondary" onclick="respondFriendship(${r.id}, 'accepted')">✓</button>
-              <button class="btn btn-sm btn-danger" onclick="respondFriendship(${r.id}, 'rejected')">✕</button>
-            </div>
-          `;
-          reqBox.appendChild(div);
-        });
-      }
-
-      const { data: friends } = await db.from('friendships')
-        .select('id, sender_id, receiver_id, sender:profiles!friendships_sender_id_fkey(*), receiver:profiles!friendships_receiver_id_fkey(*)')
-        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
-        .eq('status', 'accepted');
-
-      const friendsBox = document.getElementById('friends-list');
-      friendsBox.innerHTML = '';
-
-      if (!friends || friends.length === 0) {
-        friendsBox.innerHTML = '<p style="color:var(--subtext);font-size:12px;">Список друзей пуст</p>';
-      } else {
-        friends.forEach(f => {
-          const friendProfile = f.sender_id === currentUser.id ? f.receiver : f.sender;
-          const div = document.createElement('div');
-          div.className = 'user-card';
-          div.onclick = () => openUserProfileModal(friendProfile.id);
-          div.innerHTML = `
-            <div class="user-info-block">
-              <div class="avatar-img">${friendProfile.avatar_url ? `<img src="${friendProfile.avatar_url}" style="width:100%;height:100%;border-radius:50%;">` : friendProfile.username.charAt(0).toUpperCase()}</div>
-              <div>
-                <b>${escapeHtml(friendProfile.full_name || friendProfile.username)}</b>
-              </div>
-            </div>
-            <button class="btn btn-sm" onclick="event.stopPropagation(); openDmWith('${friendProfile.id}', '${escapeHtml(friendProfile.full_name || friendProfile.username)}')">💬 Чат</button>
-          `;
-          friendsBox.appendChild(div);
-        });
-      }
-    }
-
-    async function respondFriendship(friendshipId, status) {
-      if (status === 'accepted') {
-        await db.from('friendships').update({ status: 'accepted' }).eq('id', friendshipId);
-      } else {
-        await db.from('friendships').delete().eq('id', friendshipId);
-      }
-      loadFriendsAndRequests();
-    }
-
-    // --- ЧАТЫ И ЛИЧНЫЕ СООБЩЕНИЯ ---
-    async function loadChatsList() {
-      const { data: friends } = await db.from('friendships')
-        .select('id, sender_id, receiver_id, sender:profiles!friendships_sender_id_fkey(*), receiver:profiles!friendships_receiver_id_fkey(*)')
-        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
-        .eq('status', 'accepted');
-
-      const container = document.getElementById('chats-friends-list');
-      container.innerHTML = '';
-
-      if (!friends || friends.length === 0) {
-        container.innerHTML = '<p style="color:var(--subtext); font-size:13px; text-align:center; margin-top:20px;">Найдите друзей через поиск, чтобы начать общение!</p>';
-        return;
-      }
-
-      friends.forEach(f => {
-        const friend = f.sender_id === currentUser.id ? f.receiver : f.sender;
-        const div = document.createElement('div');
-        div.className = 'user-card';
-        div.onclick = () => openDmWith(friend.id, friend.full_name || friend.username);
-        div.innerHTML = `
-          <div class="user-info-block">
-            <div class="avatar-img">${friend.avatar_url ? `<img src="${friend.avatar_url}" style="width:100%;height:100%;border-radius:50%;">` : friend.username.charAt(0).toUpperCase()}</div>
-            <div>
-              <b>${escapeHtml(friend.full_name || friend.username)}</b>
-              <p style="font-size:11px; color:var(--subtext);">Нажмите, чтобы открыть диалог</p>
-            </div>
-          </div>
-          <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); openUserProfileModal('${friend.id}')">👤</button>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function openDmWith(friendId, friendName) {
-      activeDmPartner = { id: friendId, name: friendName };
-      document.getElementById('chats-list-screen').classList.add('hidden');
-      document.getElementById('active-chat-screen').classList.remove('hidden');
-      document.getElementById('active-partner-name').innerText = friendName;
-      
-      switchView('chats', document.querySelectorAll('.nav-item')[0], '💬 ' + friendName);
-      loadDmMessages();
-    }
-
-    function closeActiveChat() {
-      activeDmPartner = null;
-      document.getElementById('chats-list-screen').classList.remove('hidden');
-      document.getElementById('active-chat-screen').classList.add('hidden');
-      document.getElementById('header-title').innerText = '💬 Чаты';
-    }
-
-    async function loadDmMessages() {
-      if (!activeDmPartner) return;
-      const { data } = await db.from('direct_messages')
-        .select('*')
-        .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeDmPartner.id}),and(sender_id.eq.${activeDmPartner.id},receiver_id.eq.${currentUser.id})`)
-        .order('created_at', { ascending: true });
-
-      const box = document.getElementById('dm-chat-box');
-      box.innerHTML = '';
-      if (data) {
-        data.forEach(msg => {
-          const isMy = msg.sender_id === currentUser.id;
-          const div = document.createElement('div');
-          div.className = `msg-group ${isMy ? 'my' : 'their'}`;
-          div.innerHTML = `
-            <div class="msg-meta">${isMy ? 'Вы' : activeDmPartner.name}</div>
-            <div class="msg-bubble">${escapeHtml(msg.content)}</div>
-          `;
-          box.appendChild(div);
-        });
-      }
-      box.scrollTop = box.scrollHeight;
-    }
-
-    async function sendDmMessage() {
-      const input = document.getElementById('dm-message-input');
-      const text = input.value.trim();
-      if (!text || !activeDmPartner) return;
-      input.value = '';
-
-      await db.from('direct_messages').insert([{
-        sender_id: currentUser.id,
-        receiver_id: activeDmPartner.id,
-        content: text
-      }]);
-
-      loadDmMessages();
-    }
-
-    async function clearDmHistory() {
-      if (!activeDmPartner || !confirm('Очистить историю этого диалога?')) return;
-      await db.from('direct_messages')
-        .delete()
-        .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeDmPartner.id}),and(sender_id.eq.${activeDmPartner.id},receiver_id.eq.${currentUser.id})`);
-      loadDmMessages();
-    }
-
-    function subscribeRealtime() {
-      db.channel('realtime_direct_messages')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'direct_messages' }, () => {
-          if (activeDmPartner) loadDmMessages();
-        })
-        .subscribe();
-    }
-
-    // --- НАСТРОЙКИ ---
-    function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
-    function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
-
-    function escapeHtml(text) {
-      return text ? text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
-    }
-  </script>
+ </aside>
+</div>
+
+<div id="modal" class="modal-bg hidden"><div class="modal" id="modalBody"></div></div>
+<div id="toast" class="toast"></div>
+
+<script>
+const SUPABASE_URL="https://pgnmaoybgwesqctysveu.supabase.co";
+const SUPABASE_KEY="sb_publishable_TSFvhqldPDdWGncB92rVag_KkdkwlZP";
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let me=null,profile=null,chatPartner=null,selectedImage=null,realtimeStarted=false;
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+function toast(s){const t=$('toast');t.textContent=s;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
+function avatarHTML(u,cls='avatar sm'){return `<div class="${cls}">${u?.avatar_url?`<img src="${esc(u.avatar_url)}">`:esc((u?.full_name||u?.username||'?')[0]?.toUpperCase())}</div>`}
+function time(s){try{return new Date(s).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}catch{return ''}}
+
+function authTab(t){$('loginForm').classList.toggle('hidden',t!=='login');$('regForm').classList.toggle('hidden',t!=='reg');$('loginTab').classList.toggle('active',t==='login');$('regTab').classList.toggle('active',t==='reg')}
+async function login(){let email=$('loginEmail').value.trim(),password=$('loginPass').value;if(!email||!password)return toast('Заполните поля');let{error}=await db.auth.signInWithPassword({email,password});if(error)toast(error.message)}
+async function register(){let username=$('regName').value.trim(),email=$('regEmail').value.trim(),password=$('regPass').value;if(!username||!email||password.length<6)return toast('Проверьте данные');let{error}=await db.auth.signUp({email,password,options:{data:{username}}});if(error)return toast(error.message);await db.auth.signInWithPassword({email,password})}
+db.auth.onAuthStateChange((_,session)=>{if(session){me=session.user;showApp()}else{me=null;$('app').classList.add('hidden');$('auth').classList.remove('hidden')}});
+
+async function showApp(){ $('auth').classList.add('hidden');$('app').classList.remove('hidden');await loadProfile();await loadFeed();startRealtime()}
+async function loadProfile(){
+ let{data}=await db.from('profiles').select('*').eq('id',me.id).maybeSingle();
+ if(!data){let username=me.user_metadata?.username||me.email.split('@')[0];await db.from('profiles').insert({id:me.id,username,full_name:username});data={id:me.id,username,full_name:username}}
+ profile=data;
+ $('sideName').textContent=data.full_name||data.username;$('sideUsername').textContent=data.username;
+ $('sideAvatar').outerHTML=avatarHTML(data,'avatar sm');$('sideAvatar')?.setAttribute('id','sideAvatar');
+ setAvatar('composerAvatar',data);setAvatar('profileAvatar',data);
+ $('profileName').textContent=data.full_name||data.username;$('profileUsername').textContent='@'+data.username;$('profileBio').textContent=data.bio||'Заполните описание профиля.';
+}
+function setAvatar(id,u){let el=$(id);if(!el)return;if(u.avatar_url)el.innerHTML=`<img src="${esc(u.avatar_url)}">`;else el.textContent=(u.full_name||u.username||'?')[0].toUpperCase()}
+
+function go(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));$('view-'+v).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===v));$('title').textContent={home:'Главная',search:'Поиск',friends:'Друзья',messages:'Сообщения',profile:'Профиль'}[v];if(v==='home')loadFeed();if(v==='friends')loadFriends();if(v==='messages')loadChats();if(v==='profile')loadMyPosts()}
+
+async function loadFeed(){
+ const box=$('feed');box.innerHTML='<div class="muted" style="padding:25px;text-align:center">Загрузка...</div>';
+ let{data,error}=await db.from('posts').select('*,profiles!posts_user_id_fkey(id,username,full_name,avatar_url)').order('created_at',{ascending:false}).limit(50);
+ if(error){box.innerHTML='<div class="card" style="padding:20px"><b>Лента ещё не подключена</b><p class="muted" style="margin-top:6px">Выполните SQL-файл, который идёт вместе с этой версией.</p></div>';return}
+ box.innerHTML=data?.length?data.map(postHTML).join(''):'<div class="card" style="padding:28px;text-align:center"><b>Пока пусто</b><p class="muted" style="margin-top:6px">Опубликуйте первый пост.</p></div>';
+}
+function postHTML(p){
+ let u=p.profiles||{};return `<article class="card post" data-post="${p.id}"><div class="post-head">${avatarHTML(u)}<div><div class="post-author">${esc(u.full_name||u.username||'Пользователь')}</div><div class="post-time">@${esc(u.username||'')} · ${time(p.created_at)}</div></div><button class="mini post-menu" onclick="deletePost('${p.id}')">•••</button></div><div class="post-body">${esc(p.content||'')}</div>${p.image_url?`<img class="post-image" src="${esc(p.image_url)}">`:''}<div class="post-stats"><span>${p.likes_count||0} реакций</span><span>${p.comments_count||0} комментариев</span></div><div class="post-actions"><button id="like-${p.id}" onclick="likePost('${p.id}')">♡ Нравится</button><button onclick="commentPost('${p.id}')">◯ Комментировать</button><button onclick="sharePost('${p.id}')">↗ Поделиться</button></div></article>`
+}
+async function createPost(){
+ let content=$('postText').value.trim();if(!content&&!selectedImage)return toast('Добавьте текст или фото');
+ let image_url=null;
+ if(selectedImage){image_url=await uploadImage(selectedImage,'posts');if(!image_url)return}
+ let{error}=await db.from('posts').insert({user_id:me.id,content,image_url});if(error)return toast(error.message);
+ $('postText').value='';selectedImage=null;$('imagePreview').classList.add('hidden');$('postImage').value='';loadFeed()
+}
+function pickImage(){$('postImage').click()}
+function previewImage(input){selectedImage=input.files?.[0]||null;if(!selectedImage)return;let url=URL.createObjectURL(selectedImage);$('imagePreview').innerHTML=`<img src="${url}" style="max-height:180px;max-width:100%;border-radius:12px">`;$('imagePreview').classList.remove('hidden')}
+async function uploadImage(file,folder){let ext=file.name.split('.').pop().toLowerCase(),path=`${folder}/${me.id}/${crypto.randomUUID()}.${ext}`;let{error}=await db.storage.from('media').upload(path,file,{upsert:false});if(error){toast('Создайте bucket media в Supabase');return null}let{data}=db.storage.from('media').getPublicUrl(path);return data.publicUrl}
+async function deletePost(id){if(!confirm('Удалить этот пост?'))return;let{error}=await db.from('posts').delete().eq('id',id).eq('user_id',me.id);if(error)toast(error.message);else loadFeed()}
+async function likePost(id){let{data}=await db.from('post_likes').select('id').eq('post_id',id).eq('user_id',me.id).maybeSingle();if(data)await db.from('post_likes').delete().eq('id',data.id);else await db.from('post_likes').insert({post_id:id,user_id:me.id});await refreshPostCounts(id)}
+async function refreshPostCounts(id){let{count}=await db.from('post_likes').select('*',{count:'exact',head:true}).eq('post_id',id);let{count:cc}=await db.from('comments').select('*',{count:'exact',head:true}).eq('post_id',id);await db.from('posts').update({likes_count:count||0,comments_count:cc||0}).eq('id',id);loadFeed()}
+async function commentPost(id){let text=prompt('Ваш комментарий:');if(!text?.trim())return;let{error}=await db.from('comments').insert({post_id:id,user_id:me.id,content:text.trim()});if(error)toast(error.message);else{await refreshPostCounts(id);toast('Комментарий добавлен')}}
+async function sharePost(id){let url=location.href.split('#')[0]+'#post-'+id;if(navigator.share)try{await navigator.share({title:'MB',text:'Посмотри этот пост',url})}catch{}else{await navigator.clipboard.writeText(url);toast('Ссылка скопирована')}}
+
+async function searchUsers(){
+ let q=$('searchInput').value.trim();let req=db.from('profiles').select('*').neq('id',me.id).limit(30);if(q)req=req.or(`username.ilike.%${q}%,full_name.ilike.%${q}%`);let{data,error}=await req;if(error)return toast(error.message);$('searchResults').innerHTML=data?.length?data.map(userRow).join(''):'<div style="padding:20px;text-align:center" class="muted">Ничего не найдено</div>'
+}
+function userRow(u,action='profile'){return `<div class="user">${avatarHTML(u)}<div class="user-main"><b>${esc(u.full_name||u.username)}</b><div class="muted">@${esc(u.username)}</div></div><button class="btn outline" onclick="openProfile('${u.id}')">${action==='chat'?'Написать':'Профиль'}</button></div>`}
+async function openProfile(id){if(id===me.id){go('profile');return}let{data:u}=await db.from('profiles').select('*').eq('id',id).single();if(!u)return;
+ let{data:f}=await db.from('friendships').select('*').or(`and(sender_id.eq.${me.id},receiver_id.eq.${id}),and(sender_id.eq.${id},receiver_id.eq.${me.id})`).maybeSingle();
+ $('modalBody').innerHTML=`<div class="modal-head"><b>Профиль</b><button class="iconbtn" onclick="closeModal()">×</button></div><div style="text-align:center">${avatarHTML(u,'avatar lg')}<h2 style="margin-top:10px">${esc(u.full_name||u.username)}</h2><div class="muted">@${esc(u.username)}</div><p class="bio" style="margin-top:10px">${esc(u.bio||'Нет описания')}</p></div><div style="display:grid;gap:8px"><button class="btn" onclick="closeModal();openChat('${u.id}','${esc(u.full_name||u.username)}')">✉ Написать</button>${!f?`<button class="btn outline" onclick="addFriend('${u.id}')">+ Добавить в друзья</button>`:f.status==='pending'?`<button class="btn outline" disabled>Заявка уже отправлена</button>`:f.status==='accepted'?`<button class="btn outline" disabled>✓ В друзьях</button>`:''}</div>`;$('modal').classList.remove('hidden')
+}
+async function addFriend(id){let{error}=await db.from('friendships').insert({sender_id:me.id,receiver_id:id,status:'pending'});if(error)toast(error.message);else{toast('Заявка отправлена');closeModal()}}
+
+async function loadFriends(){
+ let{data:requests}=await db.from('friendships').select('id,sender_id,profiles!friendships_sender_id_fkey(*)').eq('receiver_id',me.id).eq('status','pending');$('requests').innerHTML=requests?.length?requests.map(r=>`<div class="user">${avatarHTML(r.profiles)}<div class="user-main"><b>${esc(r.profiles.full_name||r.profiles.username)}</b><div class="muted">@${esc(r.profiles.username)}</div></div><button class="btn" onclick="respond(${r.id},'accepted')">✓</button><button class="btn danger" onclick="respond(${r.id},'rejected')">×</button></div>`).join(''):'<div class="muted" style="padding:15px">Новых заявок нет</div>';
+ let{data:fs}=await db.from('friendships').select('id,sender_id,receiver_id,sender:profiles!friendships_sender_id_fkey(*),receiver:profiles!friendships_receiver_id_fkey(*)').or(`sender_id.eq.${me.id},receiver_id.eq.${me.id}`).eq('status','accepted');
+ $('friends').innerHTML=fs?.length?fs.map(f=>{let u=f.sender_id===me.id?f.receiver:f.sender;return userRow(u,'chat')}).join(''):'<div class="muted" style="padding:15px">Друзей пока нет.</div>';$('friendCount').textContent=(fs?.length||0)+' друзей'
+}
+async function respond(id,status){if(status==='accepted')await db.from('friendships').update({status}).eq('id',id);else await db.from('friendships').delete().eq('id',id);loadFriends()}
+
+async function loadChats(){
+ let{data:fs}=await db.from('friendships').select('sender_id,receiver_id,sender:profiles!friendships_sender_id_fkey(*),receiver:profiles!friendships_receiver_id_fkey(*)').or(`sender_id.eq.${me.id},receiver_id.eq.${me.id}`).eq('status','accepted');
+ $('chatList').innerHTML=fs?.length?fs.map(f=>{let u=f.sender_id===me.id?f.receiver:f.sender;return `<div class="user" onclick="openChat('${u.id}','${esc(u.full_name||u.username)}')">${avatarHTML(u)}<div class="user-main"><b>${esc(u.full_name||u.username)}</b><div class="muted">@${esc(u.username)}</div></div><span>›</span></div>`}).join(''):'<div style="padding:22px;text-align:center" class="muted">Добавьте друзей, чтобы начать чат.</div>'
+}
+function openChat(id,name){chatPartner={id,name};go('messages');$('chatList').classList.add('hidden');$('chatWindow').classList.remove('hidden');$('chatName').textContent=name;loadMessages()}
+function closeChat(){chatPartner=null;$('chatWindow').classList.add('hidden');$('chatList').classList.remove('hidden')}
+async function loadMessages(){if(!chatPartner)return;let{data}=await db.from('direct_messages').select('*').or(`and(sender_id.eq.${me.id},receiver_id.eq.${chatPartner.id}),and(sender_id.eq.${chatPartner.id},receiver_id.eq.${me.id})`).order('created_at');$('messages').innerHTML=(data||[]).map(m=>`<div class="bubble ${m.sender_id===me.id?'mine':'theirs'}">${esc(m.content)}<div style="font-size:9px;opacity:.7;margin-top:3px">${time(m.created_at)}</div></div>`).join('');$('messages').scrollTop=$('messages').scrollHeight}
+async function sendMessage(){let text=$('messageInput').value.trim();if(!text||!chatPartner)return;$('messageInput').value='';let{error}=await db.from('direct_messages').insert({sender_id:me.id,receiver_id:chatPartner.id,content:text});if(error)toast(error.message);else loadMessages()}
+
+async function loadMyPosts(){let{data}=await db.from('posts').select('*,profiles!posts_user_id_fkey(id,username,full_name,avatar_url)').eq('user_id',me.id).order('created_at',{ascending:false});$('myPosts').innerHTML=data?.length?data.map(postHTML).join(''):'<div class="card" style="padding:20px;text-align:center" class="muted">У вас пока нет публикаций.</div>'}
+function openEditProfile(){$('modalBody').innerHTML=`<div class="modal-head"><b>Редактировать профиль</b><button class="iconbtn" onclick="closeModal()">×</button></div><input id="editName" class="input" value="${esc(profile.full_name||'')}" placeholder="Имя"><textarea id="editBio" class="input" style="margin-top:9px;height:100px" placeholder="О себе">${esc(profile.bio||'')}</textarea><input id="editAvatar" class="input" style="margin-top:9px" value="${esc(profile.avatar_url||'')}" placeholder="URL аватара"><button class="btn" style="width:100%;margin-top:12px" onclick="saveProfile()">Сохранить</button>`;$('modal').classList.remove('hidden')}
+async function saveProfile(){let full_name=$('editName').value.trim(),bio=$('editBio').value.trim(),avatar_url=$('editAvatar').value.trim();let{error}=await db.from('profiles').update({full_name,bio,avatar_url}).eq('id',me.id);if(error)toast(error.message);else{closeModal();await loadProfile();toast('Профиль обновлён')}}
+function openSettings(){$('modalBody').innerHTML=`<div class="modal-head"><b>Настройки</b><button class="iconbtn" onclick="closeModal()">×</button></div><button class="btn outline" style="width:100%;margin-bottom:8px" onclick="toggleTheme()">☀ / ☾ Сменить тему</button><button class="btn danger" style="width:100%" onclick="logout()">Выйти из аккаунта</button>`;$('modal').classList.remove('hidden')}
+function toggleTheme(){let t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;localStorage.setItem('mb-theme',t)}
+async function logout(){closeModal();await db.auth.signOut()}
+function closeModal(){$('modal').classList.add('hidden')}
+$('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()})
+let saved=localStorage.getItem('mb-theme');if(saved)document.documentElement.dataset.theme=saved;
+
+function startRealtime(){if(realtimeStarted)return;realtimeStarted=true;db.channel('mb-live').on('postgres_changes',{event:'*',schema:'public',table:'direct_messages'},()=>{if(chatPartner)loadMessages()}).on('postgres_changes',{event:'*',schema:'public',table:'posts'},()=>{if($('view-home').classList.contains('active'))loadFeed()}).subscribe()}
+</script>
 </body>
 </html>
