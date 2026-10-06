@@ -471,7 +471,7 @@ button:disabled{
 
 .filters{
     display:grid;
-    grid-template-columns:1fr 1fr 110px;
+    grid-template-columns:1.5fr 1fr 1fr 110px;
     gap:7px;
     margin-bottom:15px;
 }
@@ -1005,6 +1005,215 @@ button:disabled{
     color:var(--text);
 }
 
+
+
+/* =========================
+   PROFILE UPGRADE
+========================= */
+
+.profile-main-info{
+    min-width:0;
+    flex:1;
+}
+
+.profile-stats{
+    display:flex;
+    gap:28px;
+    margin-top:20px;
+    padding:14px 0;
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+}
+
+.profile-stat{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    min-width:70px;
+}
+
+.profile-stat strong{
+    font-size:17px;
+}
+
+.profile-stat span{
+    color:var(--muted);
+    font-size:12px;
+}
+
+.edit-profile-btn{
+    width:100%;
+    margin-top:14px;
+}
+
+.profile-posts-title{
+    font-size:19px;
+    margin:24px 0 12px;
+}
+
+.profile-edit-modal{
+    position:fixed;
+    inset:0;
+    z-index:700;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:15px;
+    background:rgba(0,0,0,.68);
+}
+
+.profile-edit-modal.open{
+    display:flex;
+}
+
+.profile-edit-window{
+    width:100%;
+    max-width:520px;
+    max-height:90vh;
+    overflow:hidden;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    display:flex;
+    flex-direction:column;
+}
+
+.profile-edit-header{
+    height:60px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 12px 0 18px;
+    border-bottom:1px solid var(--line);
+}
+
+.profile-edit-body{
+    overflow-y:auto;
+    padding:20px;
+}
+
+.edit-avatar-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    margin-bottom:18px;
+}
+
+.edit-avatar-wrap .profile-avatar{
+    width:92px;
+    height:92px;
+}
+
+.edit-avatar-btn{
+    color:var(--text);
+    font-weight:700;
+    cursor:pointer;
+    font-size:13px;
+}
+
+.edit-label{
+    display:block;
+    color:var(--muted);
+    font-size:12px;
+    margin:4px 0 6px;
+}
+
+.edit-limit{
+    color:var(--muted);
+    font-size:11px;
+    margin:-3px 0 10px;
+}
+
+.save-profile-btn{
+    width:100%;
+    margin-top:10px;
+}
+
+/* Comments stay over the feed without hiding it */
+.comments-modal{
+    align-items:stretch;
+    justify-content:flex-end;
+    background:rgba(0,0,0,.12);
+    pointer-events:auto;
+}
+
+.comments-window{
+    width:min(430px,100%);
+    height:100%;
+    max-height:none;
+    border-radius:10px 0 0 10px;
+    pointer-events:auto;
+    box-shadow:-20px 0 50px rgba(0,0,0,.25);
+}
+
+.comment-meta{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.comment-delete{
+    float:right;
+    font-size:11px;
+    padding:2px 7px;
+    min-height:28px;
+}
+
+.comment-count{
+    margin-left:3px;
+}
+
+.friend-delete-btn{
+    width:30px;
+    height:30px;
+    border:1px solid var(--line);
+    border-radius:50%;
+    background:transparent;
+    color:var(--muted);
+    cursor:pointer;
+    font-size:16px;
+    line-height:1;
+}
+
+.friend-delete-btn:hover{
+    color:var(--text);
+    background:var(--hover);
+}
+
+@media(max-width:700px){
+    .filters{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .filters #peopleSearch{
+        grid-column:1/-1;
+    }
+
+    .comments-modal{
+        align-items:flex-end;
+        justify-content:center;
+        background:rgba(0,0,0,.18);
+    }
+
+    .comments-window{
+        width:100%;
+        height:82vh;
+        border-radius:10px 10px 0 0;
+    }
+
+    .profile-edit-modal{
+        align-items:flex-end;
+        padding:0;
+    }
+
+    .profile-edit-window{
+        max-height:92vh;
+        border-radius:10px 10px 0 0;
+    }
+}
+
 /* =========================
    LIGHT THEME
 ========================= */
@@ -1420,6 +1629,12 @@ body.theme-light .icon-btn{
 
                 <div class="filters">
 
+                    <input
+                        id="peopleSearch"
+                        class="input"
+                        placeholder="Имя или username"
+                        onkeydown="if(event.key==='Enter') loadPeople()">
+
                     <select
                         id="ageFilter"
                         class="select">
@@ -1563,7 +1778,7 @@ body.theme-light .icon-btn{
                 id="page-profile"
                 class="page">
 
-                <div class="profile-card">
+                <div class="profile-card my-profile-card">
 
                     <div class="profile-top">
 
@@ -1573,7 +1788,7 @@ body.theme-light .icon-btn{
                             ?
                         </div>
 
-                        <div>
+                        <div class="profile-main-info">
 
                             <div
                                 id="profileName"
@@ -1596,13 +1811,31 @@ body.theme-light .icon-btn{
 
                     </div>
 
-
                     <div
                         id="profileBio"
                         class="bio">
                         —
                     </div>
 
+                    <div class="profile-stats">
+
+                        <div class="profile-stat">
+                            <strong id="myPostsCount">0</strong>
+                            <span>постов</span>
+                        </div>
+
+                        <div class="profile-stat">
+                            <strong id="myFriendsCount">0</strong>
+                            <span>друзей</span>
+                        </div>
+
+                    </div>
+
+                    <button
+                        class="outline edit-profile-btn"
+                        onclick="openEditProfile()">
+                        Редактировать профиль
+                    </button>
 
                     <div class="profile-details">
 
@@ -1617,7 +1850,6 @@ body.theme-light .icon-btn{
                             </div>
 
                         </div>
-
 
                         <div class="detail">
 
@@ -1635,115 +1867,11 @@ body.theme-light .icon-btn{
 
                 </div>
 
+                <h2 class="profile-posts-title">
+                    Мои публикации
+                </h2>
 
-                <div class="settings-item">
-
-                    <div class="settings-title">
-                        Редактировать профиль
-                    </div>
-
-                    <br>
-
-                    <input
-                        id="editName"
-                        class="input"
-                        placeholder="Имя">
-
-                    <input
-                        id="editUsername"
-                        class="input"
-                        placeholder="Username">
-
-                    <div
-                        style="
-                        color:#666;
-                        font-size:11px;
-                        margin:-3px 0 10px">
-                        Имя и username можно менять
-                        не более 2 раз за 7 дней.
-                    </div>
-
-
-                    <input
-                        id="editAvatar"
-                        class="input"
-                        placeholder="URL аватара">
-
-
-                    <label
-                        class="photo-button"
-                        style="
-                        width:100%;
-                        margin-bottom:9px">
-
-                        Выбрать фото из галереи
-
-                        <input
-                            id="avatarFile"
-                            type="file"
-                            accept="image/*"
-                            hidden
-                            onchange="previewAvatar(event)">
-
-                    </label>
-
-
-                    <div
-                        id="avatarPreview"
-                        class="avatar-upload-preview hidden">
-
-                        <img
-                            id="avatarPreviewImage"
-                            src=""
-                            alt="">
-
-                    </div>
-
-
-                    <input
-                        id="editBirth"
-                        class="input"
-                        type="number"
-                        placeholder="Год рождения">
-
-
-                    <select
-                        id="editGender"
-                        class="select">
-
-                        <option value="">
-                            Пол
-                        </option>
-
-                        <option value="male">
-                            Мужчина
-                        </option>
-
-                        <option value="female">
-                            Женщина
-                        </option>
-
-                        <option value="other">
-                            Другое
-                        </option>
-
-                    </select>
-
-
-                    <textarea
-                        id="editBio"
-                        class="textarea"
-                        placeholder="О себе"></textarea>
-
-
-                    <button
-                        class="primary"
-                        style="margin-top:9px"
-                        onclick="saveProfile()">
-                        Сохранить
-                    </button>
-
-                </div>
+                <div id="myProfilePosts"></div>
 
             </div>
 
@@ -2027,6 +2155,113 @@ body.theme-light .icon-btn{
 
 </div>
 
+
+<!-- =========================
+     EDIT PROFILE
+========================= -->
+
+<div
+    id="editProfileModal"
+    class="profile-edit-modal">
+
+    <div class="profile-edit-window">
+
+        <div class="profile-edit-header">
+            <strong>Изменить профиль</strong>
+
+            <button
+                class="icon-btn"
+                onclick="closeEditProfile()">
+                ×
+            </button>
+        </div>
+
+        <div class="profile-edit-body">
+
+            <div class="edit-avatar-wrap">
+                <div
+                    id="editModalAvatar"
+                    class="profile-avatar">
+                    ?
+                </div>
+
+                <label class="edit-avatar-btn">
+                    Изменить фото
+                    <input
+                        id="avatarFile"
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onchange="previewAvatar(event)">
+                </label>
+            </div>
+
+            <label class="edit-label">Имя</label>
+            <input
+                id="editName"
+                class="input"
+                placeholder="Имя">
+
+            <div id="nameChangeHint" class="edit-limit"></div>
+
+            <label class="edit-label">Username</label>
+            <input
+                id="editUsername"
+                class="input"
+                placeholder="Username">
+
+            <div id="usernameChangeHint" class="edit-limit"></div>
+
+            <input
+                id="editAvatar"
+                class="input hidden"
+                placeholder="URL аватара">
+
+            <div
+                id="avatarPreview"
+                class="avatar-upload-preview hidden">
+                <img
+                    id="avatarPreviewImage"
+                    src=""
+                    alt="">
+            </div>
+
+            <label class="edit-label">Год рождения</label>
+            <input
+                id="editBirth"
+                class="input"
+                type="number"
+                placeholder="Год рождения">
+
+            <label class="edit-label">Пол</label>
+            <select
+                id="editGender"
+                class="select">
+
+                <option value="">Пол</option>
+                <option value="male">Мужчина</option>
+                <option value="female">Женщина</option>
+                <option value="other">Другое</option>
+
+            </select>
+
+            <label class="edit-label">О себе</label>
+            <textarea
+                id="editBio"
+                class="textarea"
+                placeholder="О себе"></textarea>
+
+            <button
+                class="primary save-profile-btn"
+                onclick="saveProfile()">
+                Сохранить
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 <!-- =========================
      SETTINGS
@@ -2878,6 +3113,166 @@ async function loadMyProfile(){
 }
 
 
+async function loadMyProfileStats(){
+
+    if(!currentUser)
+        return;
+
+    const {
+        count:postsCount
+    } =
+        await db
+        .from("posts")
+        .select("id", {
+            count:"exact",
+            head:true
+        })
+        .eq("user_id", currentUser.id);
+
+    const {
+        data:friendships
+    } =
+        await db
+        .from("friendships")
+        .select("id")
+        .eq("status","accepted")
+        .or(
+            `sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`
+        );
+
+    const postsEl =
+        document.getElementById("myPostsCount");
+
+    const friendsEl =
+        document.getElementById("myFriendsCount");
+
+    if(postsEl)
+        postsEl.textContent = postsCount || 0;
+
+    if(friendsEl)
+        friendsEl.textContent = friendships?.length || 0;
+}
+
+
+async function loadMyProfilePosts(){
+
+    const container =
+        document.getElementById("myProfilePosts");
+
+    if(!container || !currentUser)
+        return;
+
+    container.innerHTML =
+        `<div class="loading">Загрузка...</div>`;
+
+    const {
+        data,
+        error
+    } =
+        await db
+        .from("posts")
+        .select(`
+            *,
+            profiles(
+                id,
+                username,
+                full_name,
+                avatar_url
+            )
+        `)
+        .eq("user_id", currentUser.id)
+        .order("created_at", {ascending:false});
+
+    if(error){
+
+        container.innerHTML =
+            `<div class="empty">${escapeHtml(error.message)}</div>`;
+
+        return;
+    }
+
+    if(!data?.length){
+
+        container.innerHTML =
+            `<div class="empty">У тебя пока нет публикаций.</div>`;
+
+        return;
+    }
+
+    container.innerHTML = "";
+
+    for(const post of data){
+
+        container.appendChild(
+            await createPostElement(post)
+        );
+
+    }
+}
+
+
+function openEditProfile(){
+
+    if(!myProfile)
+        return;
+
+    renderMyProfile();
+
+    document
+        .getElementById("editProfileModal")
+        .classList.add("open");
+
+    const modalAvatar =
+        document.getElementById("editModalAvatar");
+
+    setAvatar(modalAvatar, myProfile);
+
+    updateProfileChangeHints();
+}
+
+
+function closeEditProfile(){
+
+    document
+        .getElementById("editProfileModal")
+        .classList.remove("open");
+
+}
+
+
+function updateProfileChangeHints(){
+
+    const nameHint =
+        document.getElementById("nameChangeHint");
+
+    const usernameHint =
+        document.getElementById("usernameChangeHint");
+
+    if(!nameHint || !usernameHint || !myProfile)
+        return;
+
+    const nameCount =
+        changeWindowExpired(
+            myProfile.name_change_window_start
+        )
+        ? 0
+        : (myProfile.name_changes_count || 0);
+
+    const usernameCount =
+        changeWindowExpired(
+            myProfile.username_change_window_start
+        )
+        ? 0
+        : (myProfile.username_changes_count || 0);
+
+    nameHint.textContent =
+        `Изменений за 7 дней: ${nameCount}/2`;
+
+    usernameHint.textContent =
+        `Изменений за 7 дней: ${usernameCount}/2`;
+}
+
+
 function renderMyProfile(){
 
     if(!myProfile)
@@ -2990,6 +3385,9 @@ function renderMyProfile(){
             last_seen:
                 new Date().toISOString()
         });
+
+    loadMyProfileStats();
+    loadMyProfilePosts();
 
 }
 
@@ -3427,58 +3825,11 @@ async function saveProfile(){
             bio
 
         };
-
-
-        if(nameChanged){
-
-            if(
-                changeWindowExpired(
-                    myProfile.name_change_window_start
-                )
-            ){
-
-                updateData.name_changes_count = 1;
-
-                updateData.name_change_window_start =
-                    new Date().toISOString();
-
-            }else{
-
-                updateData.name_changes_count =
-                    (
-                        myProfile.name_changes_count ||
-                        0
-                    ) + 1;
-
-            }
-
-        }
-
-
-        if(usernameChanged){
-
-            if(
-                changeWindowExpired(
-                    myProfile.username_change_window_start
-                )
-            ){
-
-                updateData.username_changes_count = 1;
-
-                updateData.username_change_window_start =
-                    new Date().toISOString();
-
-            }else{
-
-                updateData.username_changes_count =
-                    (
-                        myProfile.username_changes_count ||
-                        0
-                    ) + 1;
-
-            }
-
-        }
+        /*
+           Счётчики изменения имени и username обновляет
+           серверный trigger в Supabase. Это нельзя надёжно
+           защищать только JavaScript-кодом браузера.
+        */
 
 
         const {error} =
@@ -3516,7 +3867,11 @@ async function saveProfile(){
         await loadPeople();
         await loadFriends();
         await loadChats();
+        await loadMyProfileStats();
+        await loadMyProfilePosts();
 
+        updateProfileChangeHints();
+        closeEditProfile();
 
         alert(
             "Профиль сохранён"
@@ -3777,6 +4132,8 @@ async function createPost(){
         removePhoto();
 
         await loadFeed();
+        await loadMyProfileStats();
+        await loadMyProfilePosts();
 
 
     }catch(error){
@@ -3900,71 +4257,49 @@ async function createPostElement(
 ){
 
     const div =
-        document.createElement(
-            "article"
-        );
-
+        document.createElement("article");
 
     div.className = "post";
 
-
     const profile =
-        post.profiles ||
-        {};
-
+        post.profiles || {};
 
     const name =
         profile.full_name ||
         profile.username ||
         "Пользователь";
 
-
     const avatar =
         profile.avatar_url
         ?
-        `<img
-            src="${escapeHtml(
-                profile.avatar_url
-            )}"
-            alt="">`
+        `<img src="${escapeHtml(profile.avatar_url)}" alt="">`
         :
         escapeHtml(
-            name
-            .charAt(0)
-            .toUpperCase()
+            name.charAt(0).toUpperCase()
         );
-
 
     const likes =
-        await getLikes(
-            post.id
-        );
-
+        await getLikes(post.id);
 
     const liked =
-        await userLiked(
-            post.id
-        );
+        await userLiked(post.id);
 
+    const commentCount =
+        await getCommentCount(post.id);
 
     const image =
         post.image_url
         ?
         `<img
             class="post-image"
-            src="${escapeHtml(
-                post.image_url
-            )}"
+            src="${escapeHtml(post.image_url)}"
             alt="Фото публикации"
             loading="lazy">`
         :
         "";
 
-
     const isMine =
-        post.user_id ===
-        currentUser.id;
-
+        post.user_id === currentUser.id;
 
     div.innerHTML = `
 
@@ -3979,7 +4314,6 @@ async function createPostElement(
 
             </div>
 
-
             <div
                 class="post-author"
                 onclick="openUserProfile('${post.user_id}')">
@@ -3989,55 +4323,45 @@ async function createPostElement(
                 </div>
 
                 <div class="post-time">
-                    ${formatDateTime(
-                        post.created_at
-                    )}
+                    ${formatDateTime(post.created_at)}
                 </div>
 
             </div>
 
         </div>
 
-
         ${
             post.content
             ?
             `<div class="post-content">
-                ${escapeHtml(
-                    post.content
-                )}
+                ${escapeHtml(post.content)}
             </div>`
             :
             ""
         }
 
-
         ${image}
-
 
         <div class="post-actions">
 
             <button
-                class="action ${
-                    liked ? "liked" : ""
-                }"
+                class="action ${liked ? "liked" : ""}"
                 data-like-post="${post.id}"
                 onclick="toggleLike(${post.id})">
 
                 ${liked ? "♥" : "♡"}
-                ${likes}
+                <span>${likes}</span>
 
             </button>
-
 
             <button
                 class="action"
                 onclick="showComments(${post.id})">
 
                 Комментарии
+                <span class="comment-count">(${commentCount})</span>
 
             </button>
-
 
             ${
                 isMine
@@ -4057,11 +4381,8 @@ async function createPostElement(
 
     `;
 
-
     return div;
-
 }
-
 
 /* =========================================================
    LIKES
@@ -4117,6 +4438,29 @@ async function userLiked(
 
     return !!data;
 
+}
+
+
+async function getCommentCount(postId){
+
+    const {
+        count,
+        error
+    } =
+        await db
+        .from("comments")
+        .select("id", {
+            count:"exact",
+            head:true
+        })
+        .eq("post_id", postId);
+
+    if(error){
+        console.error(error);
+        return 0;
+    }
+
+    return count || 0;
 }
 
 
@@ -4190,6 +4534,12 @@ async function toggleLike(
 
     await loadFeed();
 
+    if(viewedProfileUser){
+        await loadOtherProfilePosts(
+            viewedProfileUser.id
+        );
+    }
+
 }
 
 
@@ -4238,6 +4588,8 @@ async function deletePost(
 
 
     await loadFeed();
+    await loadMyProfileStats();
+    await loadMyProfilePosts();
 
 
     if(viewedProfileUser){
@@ -4639,6 +4991,13 @@ async function loadPeople(){
             "genderFilter"
         ).value;
 
+    const search =
+        document.getElementById(
+            "peopleSearch"
+        )?.value
+        .trim()
+        .toLowerCase() || "";
+
 
     const year =
         new Date().getFullYear();
@@ -4647,6 +5006,15 @@ async function loadPeople(){
     const users =
         data.filter(
             user=>{
+
+                if(
+                    search &&
+                    !(
+                        (user.full_name || "").toLowerCase().includes(search) ||
+                        (user.username || "").toLowerCase().includes(search)
+                    )
+                )
+                    return false;
 
                 if(
                     genderFilter &&
@@ -4825,9 +5193,9 @@ async function createPersonElement(
         action = `
             <button
                 class="outline"
-                onclick="addFriend('${user.id}')">
+                onclick="openUserProfile('${user.id}')">
 
-                Добавить
+                Профиль
 
             </button>
         `;
@@ -5498,23 +5866,14 @@ async function loadFriends(){
                 </div>
 
 
-                <div
-                    class="person-actions">
+                <div class="person-actions">
 
                     <button
-                        class="outline"
-                        onclick="openChat('${user.id}')">
-
-                        Чат
-
-                    </button>
-
-
-                    <button
-                        class="outline"
+                        class="friend-delete-btn"
+                        title="Удалить из друзей"
                         onclick="removeFriend('${user.id}')">
 
-                        Удалить
+                        ×
 
                     </button>
 
@@ -6778,6 +7137,8 @@ function subscribeRealtime(){
             ()=>{
 
                 loadFeed();
+                loadMyProfileStats();
+                loadMyProfilePosts();
 
                 if(
                     viewedProfileUser
@@ -7056,6 +7417,17 @@ function formatTime(
 ========================================================= */
 
 document
+    .getElementById("editProfileModal")
+    .addEventListener("click", event=>{
+
+        if(event.target.id === "editProfileModal"){
+            closeEditProfile();
+        }
+
+    });
+
+
+document
     .getElementById(
         "commentsModal"
     )
@@ -7081,6 +7453,31 @@ document
 ========================================================= */
 
 loadTheme();
+
+
+
+document.addEventListener("keydown", event=>{
+
+    if(event.key !== "Escape")
+        return;
+
+    if(
+        document
+        .getElementById("commentsModal")
+        .classList.contains("open")
+    ){
+        closeComments();
+    }
+
+    if(
+        document
+        .getElementById("editProfileModal")
+        .classList.contains("open")
+    ){
+        closeEditProfile();
+    }
+
+});
 
 </script>
 
