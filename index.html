@@ -250,6 +250,22 @@ body.theme-light .mine .message{background:#000;color:#fff}
 .notif.unread{border-color:var(--text)}
 .notif-text{flex:1;line-height:1.4;font-size:14px}
 .danger{color:#e5383b!important;border-color:#e5383b!important}
+.vb{color:#3b9eff;margin-left:4px;font-size:.85em}
+.cover{height:120px;margin:-25px -25px 16px;border-radius:6px 6px 0 0;background:var(--card2) center/cover}
+.mention{font-weight:700;cursor:pointer}
+.msg-act{margin-left:8px;opacity:.7}.msg-act b{cursor:pointer;margin-left:6px;font-weight:400}
+.sw{display:flex;justify-content:space-between;align-items:center;padding:9px 0}.sw input{width:22px;height:22px}
+@media(max-width:700px){
+.cover{margin:-19px -19px 14px}
+body.in-chat .topbar,body.in-chat .mobile-nav{display:none}
+body.in-chat .content{overflow:hidden}
+body.in-chat .page.chat-page{padding:0}
+.chat-header{height:56px;padding:0 10px}
+.chat-messages{padding:12px 10px}
+.chat-input{padding:8px 8px calc(8px + env(safe-area-inset-bottom))}
+.chat-input input{font-size:16px}
+.message{max-width:86%}
+}
 </style>
 </head>
 <body>
@@ -266,6 +282,7 @@ body.theme-light .mine .message{background:#000;color:#fff}
       <input id="loginEmail" class="input" type="email" placeholder="Email">
       <input id="loginPassword" class="input" type="password" placeholder="Пароль" onkeydown="if(event.key==='Enter')login()">
       <button class="primary" style="width:100%" onclick="login()">Войти</button>
+      <button class="tab" style="width:100%;margin-top:9px;height:36px;border:0" onclick="forgot()">Забыли пароль?</button>
     </div>
     <div id="registerForm" class="hidden">
       <input id="regUsername" class="input" placeholder="Username">
@@ -354,6 +371,7 @@ body.theme-light .mine .message{background:#000;color:#fff}
 
       <div id="page-profile" class="page">
         <div class="profile-card">
+          <div id="myCover" class="cover hidden"></div>
           <div class="profile-top">
             <div id="profileAvatar" class="profile-avatar">?</div>
             <div class="profile-main-info">
@@ -368,6 +386,7 @@ body.theme-light .mine .message{background:#000;color:#fff}
             <div class="profile-stat"><strong id="myFriendsCount">0</strong><span>друзей</span></div>
           </div>
           <button class="outline edit-profile-btn" onclick="openEditProfile()">Редактировать профиль</button>
+          <button class="outline edit-profile-btn" style="margin-top:8px" onclick="shareProfile()">Поделиться профилем</button>
           <div class="profile-details">
             <div class="detail"><div class="detail-label">Год рождения</div><div id="profileBirth">Не указан</div></div>
             <div class="detail"><div class="detail-label">Пол</div><div id="profileGender">Не указан</div></div>
@@ -380,6 +399,7 @@ body.theme-light .mine .message{background:#000;color:#fff}
       <div id="page-user-profile" class="page">
         <div class="close-row"><button class="icon-btn" onclick="closeUserProfile()">×</button></div>
         <div class="profile-card">
+          <div id="otherCover" class="cover hidden"></div>
           <div class="profile-top">
             <div id="otherProfileAvatar" class="profile-avatar">?</div>
             <div class="profile-main-info">
@@ -430,7 +450,7 @@ body.theme-light .mine .message{background:#000;color:#fff}
             <label class="chat-photo-button">+
               <input id="chatPhotoInput" type="file" accept="image/*" hidden onchange="previewChatPhoto(event)">
             </label>
-            <input id="messageInput" placeholder="Сообщение..." oninput="sendTyping()" onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage()}">
+            <input id="messageInput" autocomplete="off" enterkeyhint="send" placeholder="Сообщение..." oninput="sendTyping()" onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage()}">
             <button class="send" onclick="sendMessage()">↑</button>
           </div>
         </div>
@@ -461,6 +481,8 @@ body.theme-light .mine .message{background:#000;color:#fff}
           <input id="avatarFile" type="file" accept="image/*" hidden onchange="previewAvatar(event)">
         </label>
       </div>
+      <label class="edit-label">Обложка профиля</label>
+      <input type="file" accept="image/*" class="input" style="padding:10px;height:auto" onchange="selCover=this.files[0]||null">
       <label class="edit-label">Имя</label>
       <input id="editName" class="input" placeholder="Имя">
       <div id="nameChangeHint" class="edit-limit"></div>
@@ -496,6 +518,17 @@ body.theme-light .mine .message{background:#000;color:#fff}
         <button id="themeAuto" class="outline" onclick="setTheme('auto')">Как в системе</button>
       </div>
     </div>
+    <div class="settings-item">
+      <label class="sw"><span>Скрыть статус «в сети»</span><input id="sHide" type="checkbox" onchange="setFlag('hide_online',this.checked)"></label>
+      <label class="sw"><span>Закрытый профиль</span><input id="sPriv" type="checkbox" onchange="setFlag('is_private',this.checked)"></label>
+    </div>
+    <div class="settings-item"><div style="display:grid;gap:8px">
+      <button class="outline" onclick="openSaved()">Сохранённые посты</button>
+      <button class="outline" onclick="shareProfile()">Ссылка на мой профиль</button>
+      <button class="outline" onclick="enablePush()">Push-уведомления</button>
+      <a id="sAdmin" class="outline hidden" href="admin.html" style="min-height:42px;display:flex;align-items:center;justify-content:center;text-decoration:none;color:inherit">Модерация жалоб</a>
+      <div id="sInstall"></div>
+    </div></div>
     <div class="settings-item">
       <div style="display:grid;gap:8px">
         <button class="outline" onclick="openBlocked()">Заблокированные пользователи</button>
@@ -547,7 +580,7 @@ const setAvatar = (el,p) => { if(el&&p) el.innerHTML = avHtml(p); };
 const fmtDT = d => new Date(d).toLocaleString("ru-RU",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
 const fmtT = d => new Date(d).toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
 const genderText = g => ({male:"Мужчина",female:"Женщина",other:"Другое"})[g] || "Не указан";
-const FSEL = `*,sender:profiles!friendships_sender_id_fkey(id,username,full_name,avatar_url,last_seen),receiver:profiles!friendships_receiver_id_fkey(id,username,full_name,avatar_url,last_seen)`;
+const FSEL = `*,sender:profiles!friendships_sender_id_fkey(id,username,full_name,avatar_url,last_seen,hide_online,is_verified),receiver:profiles!friendships_receiver_id_fkey(id,username,full_name,avatar_url,last_seen,hide_online,is_verified)`;
 
 /* ---------- THEME / TOAST / OVERLAYS ---------- */
 function toast(msg){
@@ -591,6 +624,7 @@ async function deleteAccount(){
 
 /* ---------- AUTH ---------- */
 db.auth.onAuthStateChange(async (event, session)=>{
+  if(event==="PASSWORD_RECOVERY") setTimeout(newPassSheet,400);
   if(session){
     me = session.user;
     $("auth").classList.add("hidden");
@@ -607,7 +641,8 @@ async function initialize(){
   await loadMyProfile();
   await loadBlocked();
   updatePresence(); refreshUnread(); refreshNotifBadge();
-  loadFeed(); loadPeople(); loadFriends(); loadChats();
+  loadFeed(); loadPeople(); loadFriends(); loadChats(); loadSaved(); welcome();
+  const lu=new URLSearchParams(location.search).get("u"); if(lu) openByUsername(lu);
   subscribeRealtime();
   clearInterval(presenceT);
   presenceT = setInterval(()=>{ if(me) updatePresence(); }, 30000);
@@ -633,11 +668,13 @@ async function register(){
   const email=$("regEmail").value.trim(), password=$("regPassword").value;
   if(!username||!name||!email||!password) return alert("Заполните все поля");
   if(!/^[a-zA-Z0-9_.]{3,30}$/.test(username)) return alert("Username: 3–30 символов, только буквы, цифры, _ и .");
+  const {data:free}=await db.rpc("username_free",{u:username});
+  if(free===false) return alert("Этот username уже занят. Один username — один человек.");
   const {data,error} = await db.auth.signUp({email,password,options:{data:{username,full_name:name}}});
   if(error) return alert(error.message);
   if(data.user){
     const {error:e} = await db.from("profiles").insert({id:data.user.id,username,full_name:name});
-    if(e) console.error(e);
+    if(e){ console.error(e); if(e.code==="23505") return alert("Этот username уже занят."); }
   }
   alert("Аккаунт создан. Если требуется подтверждение email — подтвердите почту.");
 }
@@ -652,11 +689,12 @@ async function logout(){
 
 /* ---------- PRESENCE ---------- */
 async function updatePresence(){
-  if(me) await db.from("profiles").update({last_seen:new Date().toISOString()}).eq("id",me.id);
+  if(me&&!myProfile?.hide_online) await db.from("profiles").update({last_seen:new Date().toISOString()}).eq("id",me.id);
 }
-const isOnline = p => p?.last_seen && (Date.now()-new Date(p.last_seen).getTime()) < 90000;
+const isOnline = p => p?.last_seen && !p.hide_online && (Date.now()-new Date(p.last_seen).getTime()) < 90000;
 const statusHtml = p => `<div class="online-status"><span class="status-dot ${isOnline(p)?"":"status-offline"}"></span>${isOnline(p)?"В сети":"Не в сети"}</div>`;
 function lastSeenText(p){
+  if(p?.hide_online) return "Был(а) недавно";
   if(!p?.last_seen) return "Не был в сети";
   if(isOnline(p)) return "В сети";
   const d=new Date(p.last_seen), m=Math.floor((Date.now()-d.getTime())/60000);
@@ -669,6 +707,7 @@ function lastSeenText(p){
 
 /* ---------- NAVIGATION ---------- */
 function setPage(n){
+  document.body.classList.toggle("in-chat",n==="chat");
   document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active", p.id==="page-"+n));
   if(n!=="user-profile" && n!=="chat")
     document.querySelectorAll("[data-p]").forEach(b=>b.classList.toggle("active", b.dataset.p===n));
@@ -680,7 +719,7 @@ function showPage(n){
   const loaders={notifs:loadNotifs,feed:loadFeed,people:loadPeople,friends:loadFriends,chats:loadChats,profile:loadMyProfile};
   loaders[n]?.();
 }
-function openSettings(){ $("settings").classList.add("open"); }
+function openSettings(){ syncSettings(); $("settings").classList.add("open"); }
 function closeSettings(){ $("settings").classList.remove("open"); }
 
 /* ---------- MY PROFILE ---------- */
@@ -699,7 +738,7 @@ async function loadMyProfile(){
 
 function renderMyProfile(){
   if(!myProfile) return;
-  $("profileName").textContent = nameOf(myProfile);
+  $("profileName").innerHTML = esc(nameOf(myProfile))+vb(myProfile); setCover($("myCover"),myProfile.cover_url);
   $("profileUsername").textContent = "@"+myProfile.username;
   $("profileBio").textContent = myProfile.bio || "Пользователь пока ничего не написал о себе.";
   $("profileBirth").textContent = myProfile.birth_year || "Не указан";
@@ -801,9 +840,11 @@ async function saveProfile(){
   try{
     let avatar_url = myProfile.avatar_url || null;
     if(selAvatar) avatar_url = await uploadFile("profile-avatars",selAvatar);
-    const {error} = await db.from("profiles").update({full_name,username,avatar_url,birth_year,gender,bio}).eq("id",me.id);
+    let cover_url = myProfile.cover_url || null;
+    if(selCover) cover_url = await uploadFile("profile-avatars",selCover);
+    const {error} = await db.from("profiles").update({full_name,username,avatar_url,cover_url,birth_year,gender,bio}).eq("id",me.id);
     if(error) throw error;
-    selAvatar=null; $("avatarFile").value="";
+    selAvatar=null; selCover=null; $("avatarFile").value="";
     await loadMyProfile();
     loadFeed(); loadPeople(); loadFriends(); loadChats();
     closeEditProfile();
@@ -814,7 +855,18 @@ async function saveProfile(){
 /* ---------- POSTS ---------- */
 let blocked=new Set(), selPhotos=[], feedOffset=0, feedDone=false, feedBusy=false, feedRetry=false;
 const PAGE=15;
-const POST_SEL=`*,profiles(id,username,full_name,avatar_url)`;
+const POST_SEL=`*,profiles(id,username,full_name,avatar_url,is_verified)`;
+async function withProfiles(build){
+  let r=await build(POST_SEL);
+  if(!r.error) return r;
+  r=await build("*");
+  if(r.error) return r;
+  const ids=[...new Set(r.data.map(p=>p.user_id))];
+  const {data:ps}=await db.from("profiles").select("*").in("id",ids);
+  const m=Object.fromEntries((ps||[]).map(p=>[p.id,p]));
+  r.data.forEach(p=>p.profiles=m[p.user_id]);
+  return r;
+}
 
 async function loadBlocked(){
   const {data}=await db.from("blocks").select("blocked_id").eq("blocker_id",me.id);
@@ -848,7 +900,8 @@ async function createPost(){
   try{
     const urls=[];
     for(const f of selPhotos) urls.push(await uploadFile("post-images",f));
-    const {error}=await db.from("posts").insert({user_id:me.id,content:text,image_url:urls[0]||null,image_urls:urls});
+    let {error}=await db.from("posts").insert({user_id:me.id,content:text,image_url:urls[0]||null,image_urls:urls});
+    if(error&&/image_urls|column/i.test(error.message)) ({error}=await db.from("posts").insert({user_id:me.id,content:text,image_url:urls[0]||null}));
     if(error) throw error;
     $("postText").value=""; selPhotos=[]; renderPhotoPreview();
     await loadFeed(); loadMyProfileStats(); loadMyProfilePosts();
@@ -879,15 +932,16 @@ function postEl(p,likes,liked,comments){
     <div class="post-head">
       <div class="avatar" style="cursor:pointer" onclick="openUserProfile('${p.user_id}')">${avHtml(pr)}</div>
       <div class="post-author" onclick="openUserProfile('${p.user_id}')">
-        <div class="post-name">${esc(nameOf(pr))}</div>
+        <div class="post-name">${esc(nameOf(pr))}${vb(pr)}</div>
         <div class="post-time">${fmtDT(p.created_at)}${p.edited_at?" · изменено":""}</div>
       </div>
     </div>
-    ${p.content?`<div class="post-content">${esc(p.content)}</div>`:""}
+    ${p.content?`<div class="post-content">${rich(p.content)}</div>`:""}
     ${imgs.length?`<div class="post-images n${imgs.length}">${imgs.map(u=>`<img src="${esc(u)}" alt="Фото" loading="lazy" onclick="openLightbox(this.src)">`).join("")}</div>`:""}
     <div class="post-actions">
       <button class="action ${liked?"liked":""}" data-like-post="${p.id}" onclick="toggleLike('${p.id}')">${liked?"♥":"♡"}</button>
       <button class="action cnt" data-like-count="${p.id}" title="Кто оценил" onclick="showLikers('${p.id}')">${likes}</button>
+      <button class="action" onclick="toggleSave('${p.id}',this)">${savedSet.has(String(p.id))?"★":"☆"}</button>
       <button class="action" onclick="showComments('${p.id}')">Комментарии <span data-comment-post="${p.id}">(${comments})</span></button>
       ${own?`<button class="action" onclick="editPost('${p.id}')">Изменить</button><button class="action" onclick="deletePost('${p.id}')">Удалить</button>`
            :`<button class="action" onclick="reportPost('${p.id}')">Пожаловаться</button>`}
@@ -898,7 +952,7 @@ function postEl(p,likes,liked,comments){
 async function loadPostsInto(id,userId,emptyText){
   const box=$(id);
   if(!box||!userId) return;
-  const {data,error}=await db.from("posts").select(POST_SEL).eq("user_id",userId).order("created_at",{ascending:false});
+  const {data,error}=await withProfiles(q=>db.from("posts").select(q).eq("user_id",userId).order("created_at",{ascending:false}));
   if(error){ box.innerHTML=`<div class="empty">${esc(error.message)}</div>`; return; }
   await renderPosts(box,data,emptyText,false);
 }
@@ -909,7 +963,7 @@ async function loadFeed(reset=true){
   if(feedBusy){ if(reset) feedRetry=true; return; }
   feedBusy=true;
   if(reset){ feedOffset=0; feedDone=false; box.innerHTML=`<div class="loading"></div><div class="loading"></div>`; }
-  const {data,error}=await db.from("posts").select(POST_SEL).order("created_at",{ascending:false}).range(feedOffset,feedOffset+PAGE-1);
+  const {data,error}=await withProfiles(q=>db.from("posts").select(q).order("created_at",{ascending:false}).range(feedOffset,feedOffset+PAGE-1));
   if(error){
     feedBusy=false;
     if(reset) box.innerHTML=`<div class="empty">Ошибка загрузки публикаций.<br><br>${esc(error.message)}</div>`;
@@ -1086,7 +1140,7 @@ async function loadComments(postId){
     const item=document.createElement("div"); item.className="comment-item"+(reply?" reply":"");
     item.innerHTML=`
       <div class="comment-author" onclick="openUserProfile('${c.user_id}')">${esc(nm)}</div>
-      <div class="comment-text">${esc(c.content)}</div>
+      <div class="comment-text">${rich(c.content)}</div>
       <div class="post-time">${fmtDT(c.created_at)}</div>
       <div class="comment-actions">
         <button class="action" onclick="toggleCommentLike('${c.id}',${liked})">${liked?"♥":"♡"} ${lc[c.id]||0}</button>
@@ -1194,7 +1248,7 @@ async function loadFriends(){
   const rb=$("requests"), fb=$("friends");
   if(!rb||!fb||!me) return;
   const {data:reqs,error} = await db.from("friendships")
-    .select(`*,profiles!friendships_sender_id_fkey(id,username,full_name,avatar_url,last_seen)`)
+    .select(`*,profiles!friendships_sender_id_fkey(id,username,full_name,avatar_url,last_seen,hide_online,is_verified)`)
     .eq("receiver_id",me.id).eq("status","pending");
   rb.innerHTML="";
   if(error) rb.innerHTML=`<div class="empty">Не удалось загрузить заявки.<br><br>${esc(error.message)}</div>`;
@@ -1275,7 +1329,7 @@ function closeUserProfile(){ showPage(prevPage||"feed"); }
 
 async function renderOtherProfile(u){
   if(!u) return;
-  $("otherProfileName").textContent=nameOf(u);
+  $("otherProfileName").innerHTML=esc(nameOf(u))+vb(u); setCover($("otherCover"),u.cover_url);
   $("otherProfileUsername").textContent="@"+u.username;
   $("otherProfileBio").textContent=u.bio||"Пользователь пока ничего не написал о себе.";
   $("otherBirth").textContent=u.birth_year||"Не указан";
@@ -1303,6 +1357,7 @@ async function renderOtherProfile(u){
   else box.innerHTML=`<button class="outline" onclick="openChat('${u.id}')">Написать</button><button class="outline" onclick="removeFriend('${u.id}')">Удалить из друзей</button>`;
   box.insertAdjacentHTML("beforeend",`<button class="outline" onclick="blockUser('${u.id}')">Заблокировать</button>`);
 
+  if(u.is_private&&f?.status!=="accepted"){ $("otherProfilePosts").innerHTML=`<div class="empty">Закрытый профиль. Добавьте в друзья, чтобы видеть публикации.</div>`; return; }
   loadPostsInto("otherProfilePosts",u.id,"У пользователя пока нет публикаций.");
 }
 
@@ -1375,22 +1430,13 @@ async function markRead(){
 
 async function loadMessages(){
   if(!chatUser) return;
+  const box=$("messages"); box.innerHTML="";
   const {data,error}=await db.from("direct_messages").select("*")
     .or(`and(sender_id.eq.${me.id},receiver_id.eq.${chatUser.id}),and(sender_id.eq.${chatUser.id},receiver_id.eq.${me.id})`)
-    .order("created_at",{ascending:true});
-  const box=$("messages");
-  box.innerHTML="";
+    .order("created_at",{ascending:false}).limit(80);
   if(error){ box.innerHTML=`<div class="empty">${esc(error.message)}</div>`; return; }
   if(!data?.length){ box.innerHTML=`<div class="empty">Начните разговор.</div>`; return; }
-  data.forEach(m=>{
-    const own=m.sender_id===me.id;
-    const row=document.createElement("div"); row.className="message-row"+(own?" mine":"");
-    row.innerHTML=`<div class="message">
-      ${m.image_url?`<img class="message-photo" src="${esc(m.image_url)}" alt="Фото" loading="lazy" onclick="openLightbox(this.src)">`:""}
-      ${m.content?`<div>${esc(m.content)}</div>`:""}
-      <div class="message-time">${fmtT(m.created_at)}${own?`<span class="tick">${m.read_at?"✓✓":"✓"}</span>`:""}</div></div>`;
-    box.appendChild(row);
-  });
+  data.reverse().forEach(m=>box.appendChild(msgRow(m)));
   box.scrollTop=box.scrollHeight;
   if(data.some(m=>m.receiver_id===me.id&&!m.read_at)) markRead();
 }
@@ -1411,17 +1457,19 @@ function removeChatPhoto(){
 
 async function sendMessage(){
   if(!chatUser) return;
-  const input=$("messageInput"), content=input.value.trim();
-  if(!content && !selChatPhoto) return;
-  const btn=document.querySelector(".send"); btn.disabled=true;
+  const input=$("messageInput"), content=input.value.trim(), file=selChatPhoto;
+  if(!content && !file) return;
+  input.value=""; removeChatPhoto();
+  const tmp="tmp"+Date.now();
+  addMsg({id:tmp,sender_id:me.id,receiver_id:chatUser.id,content,image_url:file?URL.createObjectURL(file):null,created_at:new Date().toISOString(),pending:true});
   try{
-    const image_url=selChatPhoto?await uploadFile("chat-images",selChatPhoto):null;
-    const {error}=await db.from("direct_messages").insert({sender_id:me.id,receiver_id:chatUser.id,content,image_url});
+    const image_url=file?await uploadFile("chat-images",file):null;
+    const {data,error}=await db.from("direct_messages").insert({sender_id:me.id,receiver_id:chatUser.id,content,image_url}).select().single();
     if(error) throw error;
-    input.value=""; removeChatPhoto();
-    await loadMessages(); loadChats();
-  }catch(err){ toast("Ошибка отправки: "+err.message); }
-  finally{ btn.disabled=false; }
+    const old=mq1(tmp);
+    if(mq1(data.id)) old?.remove(); else old?.replaceWith(msgRow(data));
+    loadChats();
+  }catch(err){ mq1(tmp)?.remove(); input.value=content; toast("Ошибка отправки: "+err.message); }
 }
 
 /* typing */
@@ -1477,7 +1525,16 @@ function subscribeRealtime(){
   if(channel) db.removeChannel(channel);
   const active=id=>$("page-"+id).classList.contains("active");
   const H=[
-    ["direct_messages",null,async()=>{ if(chatUser) await loadMessages(); loadChats(); refreshUnread(); }],
+    ["direct_messages",null,p=>{
+      const n=p.new,o=p.old;
+      if(p.eventType==="DELETE") mq1(o?.id)?.remove();
+      else if(chatUser&&n&&[n.sender_id,n.receiver_id].includes(chatUser.id)&&[n.sender_id,n.receiver_id].includes(me.id)){
+        if(p.eventType==="INSERT"){ addMsg(n); if(n.receiver_id===me.id) markRead(); }
+        else mq1(n.id)?.replaceWith(msgRow(n));
+      }
+      if(active("chats")) loadChats();
+      refreshUnread();
+    }],
     ["posts",null,()=>{
       if(document.querySelector(".content").scrollTop<300) loadFeed();
       loadMyProfileStats(); loadMyProfilePosts();
@@ -1517,6 +1574,119 @@ function subscribeRealtime(){
   });
   channel=c.subscribe();
 }
+
+/* ---------- NEW FEATURES ---------- */
+const rich=t=>esc(t).replace(/(^|\s)@([a-zA-Z0-9_.]{3,30})/g,'$1<span class="mention" onclick="openByUsername(\'$2\')">@$2</span>');
+const vb=p=>p?.is_verified?'<span class="vb" title="Подтверждён">✔</span>':"";
+const setCover=(el,u)=>{ if(!el) return; el.classList.toggle("hidden",!u); el.style.backgroundImage=u?`url("${u}")`:""; };
+let selCover=null, savedSet=new Set(), dip=null;
+async function openByUsername(u){
+  const {data}=await db.from("profiles").select("id").ilike("username",u).maybeSingle();
+  data?openUserProfile(data.id):toast("Пользователь не найден");
+}
+/* messages */
+const MSG={}, mq1=id=>document.querySelector(`[data-mid="${id}"]`);
+function msgRow(m){
+  MSG[m.id]=m; const own=m.sender_id===me.id;
+  const row=document.createElement("div"); row.className="message-row"+(own?" mine":""); row.dataset.mid=m.id;
+  row.innerHTML=`<div class="message">${m.image_url?`<img class="message-photo" src="${esc(m.image_url)}" alt="Фото" onclick="openLightbox(this.src)">`:""}${m.content?`<div>${rich(m.content)}</div>`:""}<div class="message-time">${fmtT(m.created_at)}${m.edited_at?" · изм.":""}${own?`<span class="tick">${m.pending?"…":m.read_at?"✓✓":"✓"}</span>`:""}${own&&!m.pending?`<span class="msg-act">${m.content?`<b onclick="editMsg('${m.id}')">✎</b>`:""}<b onclick="deleteMsg('${m.id}')">🗑</b></span>`:""}</div></div>`;
+  return row;
+}
+function addMsg(m){
+  const box=$("messages"); if(mq1(m.id)) return;
+  box.querySelector(".empty")?.remove();
+  const near=box.scrollHeight-box.scrollTop-box.clientHeight<150||m.sender_id===me.id;
+  box.appendChild(msgRow(m)); if(near) box.scrollTop=box.scrollHeight;
+}
+async function editMsg(id){
+  const m=MSG[id], t=prompt("Изменить сообщение:",m.content);
+  if(t===null||!t.trim()||t.trim()===m.content) return;
+  const {data,error}=await db.from("direct_messages").update({content:t.trim(),edited_at:new Date().toISOString()}).eq("id",id).eq("sender_id",me.id).select().single();
+  if(error) return toast(error.message);
+  mq1(id)?.replaceWith(msgRow(data)); loadChats();
+}
+async function deleteMsg(id){
+  if(!confirm("Удалить сообщение?")) return;
+  const {error}=await db.from("direct_messages").delete().eq("id",id).eq("sender_id",me.id);
+  if(error) return toast(error.message);
+  mq1(id)?.remove(); loadChats();
+}
+/* password reset */
+async function forgot(){
+  const email=$("loginEmail").value.trim();
+  if(!email) return alert("Введите email выше, затем нажмите «Забыли пароль?»");
+  const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  alert(error?error.message:"Письмо для сброса пароля отправлено на "+email);
+}
+function newPassSheet(){
+  openSheet("Новый пароль");
+  $("sheetBody").innerHTML=`<input id="np1" class="input" type="password" placeholder="Новый пароль (мин. 6 символов)"><button class="primary" style="width:100%" onclick="saveNewPass()">Сохранить</button>`;
+}
+async function saveNewPass(){
+  const p=$("np1").value; if(p.length<6) return toast("Минимум 6 символов");
+  const {error}=await db.auth.updateUser({password:p});
+  if(error) return toast(error.message);
+  closeSheet(); toast("Пароль изменён"); history.replaceState(null,"",location.pathname);
+}
+/* welcome + install */
+addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); dip=e; });
+const installHtml=()=>(matchMedia("(display-mode: standalone)").matches||navigator.standalone)?"":dip?`<button class="primary" style="width:100%" onclick="dip.prompt()">Установить приложение</button>`:`<div class="edit-limit">Установить MB: в меню браузера выберите «Добавить на главный экран» (iPhone: «Поделиться» → «На экран Домой»).</div>`;
+function welcome(){
+  const k="mb-w-"+me.id;
+  if(localStorage.getItem(k)||Date.now()-new Date(me.created_at)>2*864e5) return;
+  localStorage.setItem(k,1);
+  openSheet("Добро пожаловать в MB");
+  $("sheetBody").innerHTML=`<div style="text-align:center;line-height:1.6"><div class="auth-logo" style="margin-bottom:8px">MB</div><p>Создали <b>Билол Муминов</b> и <b>Claude</b></p><p class="edit-limit" style="margin:10px 0 16px">Пишите друзьям, публикуйте посты и делитесь профилем.</p>${installHtml()}<button class="primary" style="width:100%;margin-top:10px" onclick="closeSheet()">Начать</button></div>`;
+}
+/* settings */
+function syncSettings(){
+  if(!myProfile) return;
+  $("sHide").checked=!!myProfile.hide_online; $("sPriv").checked=!!myProfile.is_private;
+  $("sAdmin").classList.toggle("hidden",!myProfile.is_admin); $("sInstall").innerHTML=installHtml();
+}
+async function setFlag(col,v){
+  const {error}=await db.from("profiles").update({[col]:v}).eq("id",me.id);
+  if(error){ toast(error.message); return syncSettings(); }
+  myProfile[col]=v; toast("Сохранено");
+}
+async function shareProfile(){
+  const url=location.origin+location.pathname+"?u="+myProfile.username;
+  try{ if(navigator.share) await navigator.share({title:"MB",url}); else{ await navigator.clipboard.writeText(url); toast("Ссылка скопирована"); } }catch(e){}
+}
+/* bookmarks */
+async function loadSaved(){
+  const {data}=await db.from("saved_posts").select("post_id").eq("user_id",me.id);
+  savedSet=new Set((data||[]).map(x=>String(x.post_id)));
+}
+async function toggleSave(id,b){
+  const on=savedSet.has(String(id));
+  const {error}=on?await db.from("saved_posts").delete().eq("post_id",id).eq("user_id",me.id):await db.from("saved_posts").insert({post_id:id,user_id:me.id});
+  if(error) return toast(error.message);
+  on?savedSet.delete(String(id)):savedSet.add(String(id)); b.textContent=on?"☆":"★";
+}
+async function openSaved(){
+  openSheet("Сохранённые"); const ids=[...savedSet];
+  if(!ids.length){ $("sheetBody").innerHTML=`<div class="empty">Пока ничего не сохранено.</div>`; return; }
+  const {data}=await withProfiles(q=>db.from("posts").select(q).in("id",ids));
+  await renderPosts($("sheetBody"),data||[],"Пусто",false);
+}
+/* push */
+const VAPID_PUBLIC="";
+async function enablePush(){
+  if(!("PushManager" in window)) return toast("Браузер не поддерживает push");
+  if(!VAPID_PUBLIC) return toast("Push ещё не настроен: нужен VAPID-ключ");
+  if(await Notification.requestPermission()!=="granted") return toast("Уведомления запрещены");
+  const reg=await navigator.serviceWorker.ready;
+  const raw=atob((VAPID_PUBLIC+"=".repeat((4-VAPID_PUBLIC.length%4)%4)).replace(/-/g,"+").replace(/_/g,"/"));
+  const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:Uint8Array.from(raw,c=>c.charCodeAt(0))});
+  const j=sub.toJSON();
+  const {error}=await db.from("push_subscriptions").upsert({user_id:me.id,endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth},{onConflict:"endpoint"});
+  toast(error?error.message:"Push включены");
+}
+/* swipe down to close sheets */
+let sw0=null;
+document.addEventListener("touchstart",e=>{ const h=e.target.closest(".profile-edit-header,.comments-header,.full-header"); sw0=h?{y:e.touches[0].clientY,h}:null; },{passive:true});
+document.addEventListener("touchend",e=>{ if(sw0&&e.changedTouches[0].clientY-sw0.y>70) sw0.h.querySelector(".icon-btn")?.click(); sw0=null; });
 
 /* ---------- MISC ---------- */
 $("editProfileModal").addEventListener("click",e=>{ if(e.target.id==="editProfileModal") closeEditProfile(); });
