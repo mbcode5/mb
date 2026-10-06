@@ -1,0 +1,22 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MB — Модерация</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>body{font-family:-apple-system,Arial,sans-serif;background:#000;color:#fff;padding:16px;max-width:760px;margin:auto}.c{border:1px solid #292929;border-radius:6px;padding:14px;margin-bottom:10px;background:#090909}button{border:1px solid #292929;background:#111;color:#fff;border-radius:5px;padding:9px 14px;margin:8px 8px 0 0;cursor:pointer}.d{border-color:#e5383b;color:#e5383b}img{max-width:100%;border-radius:5px;margin-top:8px}a{color:#fff}small{color:#777}</style></head><body>
+<h2>Жалобы</h2><p><a href="./">← В приложение</a></p><div id="box">Загрузка...</div>
+<script>
+const db=supabase.createClient("https://pgnmaoybgwesqctysveu.supabase.co","sb_publishable_TSFvhqldPDdWGncB92rVag_KkdkwlZP");
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+async function load(){
+ const box=document.getElementById("box");
+ const {data:{session}}=await db.auth.getSession();
+ if(!session){box.textContent="Войдите в MB в этом же браузере.";return}
+ const {data:r,error}=await db.from("reports").select("*").limit(100);
+ if(error){box.textContent=error.message;return}
+ if(!r.length){box.textContent="Жалоб нет.";return}
+ const {data:ps}=await db.from("posts").select("*").in("id",[...new Set(r.map(x=>x.post_id))]);
+ const P=Object.fromEntries((ps||[]).map(p=>[p.id,p]));
+ box.innerHTML=r.map(x=>{const p=P[x.post_id],im=p&&(p.image_urls?.[0]||p.image_url);
+  return `<div class="c"><small>Причина:</small> ${esc(x.reason)}<hr style="border:0;border-top:1px solid #292929">${p?`${esc(p.content||"")}${im?`<img src="${esc(im)}">`:""}<br><button class="d" onclick="delPost('${p.id}')">Удалить пост</button>`:"<small>Пост уже удалён</small><br>"}<button onclick="dismiss('${x.id}')">Отклонить жалобу</button></div>`}).join("")}
+async function delPost(id){if(!confirm("Удалить пост?"))return;const {error}=await db.from("posts").delete().eq("id",id);if(error)return alert(error.message);load()}
+async function dismiss(id){await db.from("reports").delete().eq("id",id);load()}
+load();
+</script></body></html>
