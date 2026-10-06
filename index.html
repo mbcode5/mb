@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <title>MB — Social</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MB">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
@@ -186,6 +194,62 @@ body.comments-open .content{padding-bottom:65vh}
 .person,.friend{align-items:flex-start}
 }
 body.theme-light .mine .message{background:#000;color:#fff}
+
+/* ===== skeletons ===== */
+.loading{height:96px;padding:0;font-size:0;color:transparent;border:1px solid var(--line);border-radius:6px;margin-bottom:10px;background:linear-gradient(90deg,var(--card) 25%,var(--hover) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.3s infinite linear}
+@keyframes shimmer{to{background-position:-200% 0}}
+/* ===== animations ===== */
+@keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+@keyframes toastIn{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
+.page.active{animation:pageIn .25s ease}
+.comments-modal.open .comments-window{animation:slideIn .28s cubic-bezier(.2,.8,.2,1)}
+@media(max-width:700px){.comments-modal.open .comments-window{animation-name:slideUp}}
+.profile-edit-modal.open .profile-edit-window{animation:pop .2s ease}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+/* ===== toasts / lightbox ===== */
+#toasts{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);z-index:1000;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:calc(100% - 24px);max-width:420px}
+.toast{background:var(--text);color:var(--bg);padding:11px 16px;border-radius:8px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.35);animation:toastIn .25s ease;transition:opacity .35s,transform .35s;max-width:100%;text-align:center}
+.toast.out{opacity:0;transform:translateY(8px)}
+.lightbox{position:fixed;inset:0;z-index:900;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.92);padding:16px;cursor:zoom-out}
+.lightbox.open{display:flex;animation:pop .2s ease}
+.lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px}
+/* ===== badges / topbar ===== */
+.icon-btn{position:relative}
+.top-actions{display:flex;gap:8px}
+.badge{background:#e5383b;color:#fff;font-size:10px;font-weight:700;border-radius:10px;min-width:18px;height:18px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;margin-left:6px}
+#bellBadge{position:absolute;top:-6px;right:-6px;margin:0}
+.nav-btn .badge{float:right;margin-top:2px}
+/* ===== posts ===== */
+.photo-grid{display:none;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:12px}
+.pp{position:relative}
+.pp img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:5px;display:block}
+.pp .remove-photo{width:26px;height:26px;right:4px;top:4px}
+.post-images{display:grid;gap:2px;background:var(--card2)}
+.post-images img{width:100%;display:block;object-fit:cover;cursor:zoom-in}
+.post-images.n1{grid-template-columns:1fr}
+.post-images.n1 img{max-height:650px;object-fit:contain}
+.post-images.n2,.post-images.n3,.post-images.n4{grid-template-columns:1fr 1fr}
+.post-images.n2 img,.post-images.n3 img,.post-images.n4 img{aspect-ratio:1}
+.post-images.n3 img:first-child{grid-column:1/-1;aspect-ratio:2/1}
+.cnt{padding:0 6px;margin-left:-6px;min-width:28px}
+.edit-box{padding:0 15px 15px}
+.message-photo{cursor:zoom-in}
+.tick{margin-left:4px}
+/* ===== comments ===== */
+.reply{margin-left:22px;border-left:2px solid var(--line);padding-left:12px}
+.comment-actions{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
+.comment-actions .action{min-height:28px;font-size:12px;padding:0 8px}
+.reply-bar{display:none;align-items:center;justify-content:space-between;padding:7px 15px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+.reply-bar.show{display:flex}
+.reply-bar button{border:0;background:transparent;color:var(--text);font-size:16px}
+/* ===== notifications / danger ===== */
+.notif{display:flex;gap:11px;align-items:center;padding:12px;margin-bottom:7px;border:1px solid var(--line);border-radius:5px;background:var(--card);cursor:pointer}
+.notif.unread{border-color:var(--text)}
+.notif-text{flex:1;line-height:1.4;font-size:14px}
+.danger{color:#e5383b!important;border-color:#e5383b!important}
 </style>
 </head>
 <body>
@@ -216,7 +280,10 @@ body.theme-light .mine .message{background:#000;color:#fff}
 <div id="app" class="app hidden">
   <header class="topbar">
     <div class="logo">MB</div>
-    <button class="icon-btn" onclick="openSettings()">☰</button>
+    <div class="top-actions">
+      <button class="icon-btn" onclick="showPage('notifs')">🔔<span id="bellBadge" class="badge hidden"></span></button>
+      <button class="icon-btn" onclick="openSettings()">☰</button>
+    </div>
   </header>
 
   <main class="main">
@@ -238,18 +305,16 @@ body.theme-light .mine .message{background:#000;color:#fff}
             <div id="postAvatar" class="mini-avatar">?</div>
             <textarea id="postText" class="post-input" placeholder="Что нового?" rows="1"></textarea>
           </div>
-          <div id="photoPreview" class="photo-preview">
-            <img id="previewImage" src="" alt="">
-            <button class="remove-photo" onclick="removePhoto()">×</button>
-          </div>
+          <div id="photoPreview" class="photo-grid"></div>
           <div class="create-bottom">
             <label class="photo-button">Фото
-              <input id="photoInput" type="file" accept="image/*" hidden onchange="previewPhoto(event)">
+              <input id="photoInput" type="file" accept="image/*" multiple hidden onchange="previewPhoto(event)">
             </label>
             <button class="primary" id="postBtn" onclick="createPost()">Опубликовать</button>
           </div>
         </div>
-        <div id="feed"><div class="loading">Загрузка...</div></div>
+        <div id="feed"><div class="loading"></div><div class="loading"></div></div>
+        <div id="feedEnd" style="height:1px"></div>
       </div>
 
       <div id="page-people" class="page">
@@ -338,6 +403,12 @@ body.theme-light .mine .message{background:#000;color:#fff}
         <div id="otherProfilePosts"></div>
       </div>
 
+      <div id="page-notifs" class="page">
+        <h1 class="page-title">Уведомления</h1>
+        <p class="page-sub">Заявки, лайки и комментарии</p>
+        <div id="notifList"></div>
+      </div>
+
       <div id="page-chat" class="page chat-page">
         <div class="chat-layout">
           <div class="chat-header">
@@ -359,7 +430,7 @@ body.theme-light .mine .message{background:#000;color:#fff}
             <label class="chat-photo-button">+
               <input id="chatPhotoInput" type="file" accept="image/*" hidden onchange="previewChatPhoto(event)">
             </label>
-            <input id="messageInput" placeholder="Сообщение..." onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage()}">
+            <input id="messageInput" placeholder="Сообщение..." oninput="sendTyping()" onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage()}">
             <button class="send" onclick="sendMessage()">↑</button>
           </div>
         </div>
@@ -419,13 +490,18 @@ body.theme-light .mine .message{background:#000;color:#fff}
     <div class="settings-item">
       <div class="settings-title">Тема</div>
       <div class="settings-desc">Выбери оформление MB.</div>
-      <div class="theme-grid">
+      <div class="theme-grid" style="grid-template-columns:1fr 1fr 1fr">
         <button id="themeDark" class="outline" onclick="setTheme('dark')">Чёрная</button>
         <button id="themeLight" class="outline" onclick="setTheme('light')">Белая</button>
+        <button id="themeAuto" class="outline" onclick="setTheme('auto')">Как в системе</button>
       </div>
     </div>
     <div class="settings-item">
-      <button class="primary" style="width:100%" onclick="logout()">Выйти из аккаунта</button>
+      <div style="display:grid;gap:8px">
+        <button class="outline" onclick="openBlocked()">Заблокированные пользователи</button>
+        <button class="primary" onclick="logout()">Выйти из аккаунта</button>
+        <button class="outline danger" onclick="deleteAccount()">Удалить аккаунт</button>
+      </div>
     </div>
   </div>
 </div>
@@ -437,10 +513,20 @@ body.theme-light .mine .message{background:#000;color:#fff}
       <button class="icon-btn" onclick="closeComments()">×</button>
     </div>
     <div id="commentsList" class="comments-list"></div>
+    <div id="replyBar" class="reply-bar"><span>Ответ для <b id="replyName"></b></span><button onclick="cancelReply()">×</button></div>
     <div class="comments-input">
       <input id="commentInput" class="input" placeholder="Написать комментарий..." onkeydown="if(event.key==='Enter'){event.preventDefault();sendComment()}">
       <button class="primary" onclick="sendComment()">Отправить</button>
     </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+<div id="lightbox" class="lightbox" onclick="closeLightbox()"><img id="lightboxImg" src="" alt=""></div>
+<div id="sheet" class="profile-edit-modal" style="z-index:800" onclick="if(event.target===this)closeSheet()">
+  <div class="profile-edit-window">
+    <div class="profile-edit-header"><strong id="sheetTitle"></strong><button class="icon-btn" onclick="closeSheet()">×</button></div>
+    <div class="profile-edit-body" id="sheetBody"></div>
   </div>
 </div>
 
@@ -463,15 +549,45 @@ const fmtT = d => new Date(d).toLocaleTimeString("ru-RU",{hour:"2-digit",minute:
 const genderText = g => ({male:"Мужчина",female:"Женщина",other:"Другое"})[g] || "Не указан";
 const FSEL = `*,sender:profiles!friendships_sender_id_fkey(id,username,full_name,avatar_url,last_seen),receiver:profiles!friendships_receiver_id_fkey(id,username,full_name,avatar_url,last_seen)`;
 
-/* ---------- THEME ---------- */
-function setTheme(t){
-  if(t!=="light") t="dark";
-  document.body.classList.toggle("theme-light", t==="light");
-  localStorage.setItem("mb-theme", t);
-  $("themeDark").classList.toggle("theme-active", t==="dark");
-  $("themeLight").classList.toggle("theme-active", t==="light");
+/* ---------- THEME / TOAST / OVERLAYS ---------- */
+function toast(msg){
+  const t=document.createElement("div"); t.className="toast"; t.textContent=msg;
+  $("toasts").appendChild(t);
+  setTimeout(()=>t.classList.add("out"),2800);
+  setTimeout(()=>t.remove(),3200);
 }
-setTheme(localStorage.getItem("mb-theme"));
+window.alert=m=>toast(String(m));
+
+const mq=window.matchMedia("(prefers-color-scheme: light)");
+function applyTheme(){
+  const saved=localStorage.getItem("mb-theme");
+  const t=saved||(mq.matches?"light":"dark");
+  document.body.classList.toggle("theme-light",t==="light");
+  const active=saved||"auto";
+  ["dark","light","auto"].forEach(k=>$("theme"+k[0].toUpperCase()+k.slice(1))?.classList.toggle("theme-active",active===k));
+  document.querySelector('meta[name=theme-color]')?.setAttribute("content",t==="light"?"#ffffff":"#000000");
+}
+function setTheme(t){
+  if(t==="auto") localStorage.removeItem("mb-theme"); else localStorage.setItem("mb-theme",t);
+  applyTheme();
+}
+mq.addEventListener("change",()=>{ if(!localStorage.getItem("mb-theme")) applyTheme(); });
+applyTheme();
+
+function openLightbox(src){ $("lightboxImg").src=src; $("lightbox").classList.add("open"); }
+function closeLightbox(){ $("lightbox").classList.remove("open"); }
+function openSheet(title){ $("sheetTitle").textContent=title; $("sheetBody").innerHTML=`<div class="loading"></div>`; $("sheet").classList.add("open"); }
+function closeSheet(){ $("sheet").classList.remove("open"); }
+
+async function deleteAccount(){
+  if(!confirm("Удалить аккаунт навсегда? Все ваши посты, комментарии и сообщения будут удалены.")) return;
+  if(!confirm("Это действие нельзя отменить. Удалить?")) return;
+  const {error}=await db.rpc("delete_my_account");
+  if(error) return toast("Не удалось удалить: "+error.message);
+  closeSettings();
+  await db.auth.signOut();
+  toast("Аккаунт удалён");
+}
 
 /* ---------- AUTH ---------- */
 db.auth.onAuthStateChange(async (event, session)=>{
@@ -489,7 +605,8 @@ db.auth.onAuthStateChange(async (event, session)=>{
 
 async function initialize(){
   await loadMyProfile();
-  updatePresence();
+  await loadBlocked();
+  updatePresence(); refreshUnread(); refreshNotifBadge();
   loadFeed(); loadPeople(); loadFriends(); loadChats();
   subscribeRealtime();
   clearInterval(presenceT);
@@ -560,7 +677,7 @@ function showPage(n){
   if(n!=="user-profile") viewUser=null;
   if(n!=="chat") chatUser=null;
   setPage(n);
-  const loaders={feed:loadFeed,people:loadPeople,friends:loadFriends,chats:loadChats,profile:loadMyProfile};
+  const loaders={notifs:loadNotifs,feed:loadFeed,people:loadPeople,friends:loadFriends,chats:loadChats,profile:loadMyProfile};
   loaders[n]?.();
 }
 function openSettings(){ $("settings").classList.add("open"); }
@@ -639,10 +756,24 @@ function previewAvatar(e){
   r.readAsDataURL(f);
 }
 
+async function compress(file){
+  if(!file.type.startsWith("image/")||file.type==="image/gif") return file;
+  try{
+    const bmp=await createImageBitmap(file);
+    const k=Math.min(1,1280/Math.max(bmp.width,bmp.height));
+    const c=document.createElement("canvas");
+    c.width=Math.round(bmp.width*k); c.height=Math.round(bmp.height*k);
+    c.getContext("2d").drawImage(bmp,0,0,c.width,c.height);
+    const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.82));
+    return blob?new File([blob],"photo.jpg",{type:"image/jpeg"}):file;
+  }catch(e){ return file; }
+}
+
 async function uploadFile(bucket,file){
-  const ext = (file.name.split(".").pop()||"jpg").toLowerCase();
-  const path = `${me.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-  const {error} = await db.storage.from(bucket).upload(path,file,{cacheControl:"3600",upsert:false});
+  file=await compress(file);
+  const ext=(file.type.split("/")[1]||"jpg").replace("jpeg","jpg");
+  const path=`${me.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  const {error}=await db.storage.from(bucket).upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type});
   if(error) throw new Error("Не удалось загрузить фото: "+error.message);
   return db.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 }
@@ -681,185 +812,324 @@ async function saveProfile(){
 }
 
 /* ---------- POSTS ---------- */
+let blocked=new Set(), selPhotos=[], feedOffset=0, feedDone=false, feedBusy=false, feedRetry=false;
+const PAGE=15;
+const POST_SEL=`*,profiles(id,username,full_name,avatar_url)`;
+
+async function loadBlocked(){
+  const {data}=await db.from("blocks").select("blocked_id").eq("blocker_id",me.id);
+  blocked=new Set((data||[]).map(b=>b.blocked_id));
+}
+
 function previewPhoto(e){
-  const f=e.target.files?.[0];
-  if(!f) return;
-  if(!f.type.startsWith("image/")){ e.target.value=""; return alert("Можно выбрать только изображение"); }
-  if(f.size>10*1024*1024){ e.target.value=""; return alert("Максимальный размер фото — 10 MB"); }
-  selPhoto=f;
-  const r=new FileReader();
-  r.onload=ev=>{ $("previewImage").src=ev.target.result; $("photoPreview").style.display="block"; };
-  r.readAsDataURL(f);
+  for(const f of e.target.files){
+    if(selPhotos.length>=4){ toast("Максимум 4 фото"); break; }
+    if(!f.type.startsWith("image/")) continue;
+    if(f.size>10*1024*1024){ toast("Фото больше 10 MB пропущено"); continue; }
+    selPhotos.push(f);
+  }
+  e.target.value=""; renderPhotoPreview();
 }
-function removePhoto(){
-  selPhoto=null; $("photoInput").value=""; $("previewImage").src=""; $("photoPreview").style.display="none";
+function renderPhotoPreview(){
+  const box=$("photoPreview"); box.innerHTML="";
+  box.style.display=selPhotos.length?"grid":"none";
+  selPhotos.forEach((f,i)=>{
+    const d=document.createElement("div"); d.className="pp";
+    d.innerHTML=`<img src="${URL.createObjectURL(f)}" alt=""><button class="remove-photo" onclick="removePhoto(${i})">×</button>`;
+    box.appendChild(d);
+  });
 }
+function removePhoto(i){ selPhotos.splice(i,1); renderPhotoPreview(); }
 
 async function createPost(){
   const text=$("postText").value.trim();
-  if(!text && !selPhoto) return alert("Добавьте текст или фотографию");
+  if(!text && !selPhotos.length) return toast("Добавьте текст или фотографию");
   const btn=$("postBtn"); btn.disabled=true; btn.textContent="Публикация...";
   try{
-    const image_url = selPhoto ? await uploadFile("post-images",selPhoto) : null;
-    const {error} = await db.from("posts").insert({user_id:me.id,content:text,image_url});
+    const urls=[];
+    for(const f of selPhotos) urls.push(await uploadFile("post-images",f));
+    const {error}=await db.from("posts").insert({user_id:me.id,content:text,image_url:urls[0]||null,image_urls:urls});
     if(error) throw error;
-    $("postText").value=""; removePhoto();
+    $("postText").value=""; selPhotos=[]; renderPhotoPreview();
     await loadFeed(); loadMyProfileStats(); loadMyProfilePosts();
-  }catch(err){ alert("Ошибка публикации:\n"+err.message); }
+  }catch(err){ toast("Ошибка публикации: "+err.message); }
   finally{ btn.disabled=false; btn.textContent="Опубликовать"; }
 }
 
-const POST_SEL = `*,profiles(id,username,full_name,avatar_url)`;
-
-async function renderPosts(box, posts, emptyText){
-  if(!posts?.length){ box.innerHTML = `<div class="empty">${emptyText}</div>`; return; }
-  const ids = posts.map(p=>p.id);
-  const [{data:likes},{data:coms}] = await Promise.all([
+async function renderPosts(box,posts,emptyText,append){
+  posts=posts.filter(p=>!blocked.has(p.user_id));
+  if(!posts.length){ if(!append) box.innerHTML=`<div class="empty">${emptyText}</div>`; return; }
+  const ids=posts.map(p=>p.id);
+  const [{data:likes},{data:coms}]=await Promise.all([
     db.from("post_likes").select("post_id,user_id").in("post_id",ids),
     db.from("comments").select("post_id").in("post_id",ids)
   ]);
-  const lc={}, mine=new Set(), cc={};
+  const lc={},mine=new Set(),cc={};
   (likes||[]).forEach(l=>{ lc[l.post_id]=(lc[l.post_id]||0)+1; if(l.user_id===me.id) mine.add(l.post_id); });
   (coms||[]).forEach(c=>{ cc[c.post_id]=(cc[c.post_id]||0)+1; });
-  box.innerHTML = "";
-  posts.forEach(p=>box.appendChild(postEl(p, lc[p.id]||0, mine.has(p.id), cc[p.id]||0)));
+  if(append) box.querySelector(".empty")?.remove(); else box.innerHTML="";
+  posts.forEach(p=>box.appendChild(postEl(p,lc[p.id]||0,mine.has(p.id),cc[p.id]||0)));
 }
 
-function postEl(p, likes, liked, comments){
-  const div=document.createElement("article"); div.className="post";
-  const pr=p.profiles||{};
-  div.innerHTML = `
+function postEl(p,likes,liked,comments){
+  const div=document.createElement("article"); div.className="post"; div.dataset.post=p.id;
+  const pr=p.profiles||{}, own=p.user_id===me.id;
+  const imgs=p.image_urls?.length?p.image_urls:(p.image_url?[p.image_url]:[]);
+  div.innerHTML=`
     <div class="post-head">
       <div class="avatar" style="cursor:pointer" onclick="openUserProfile('${p.user_id}')">${avHtml(pr)}</div>
       <div class="post-author" onclick="openUserProfile('${p.user_id}')">
         <div class="post-name">${esc(nameOf(pr))}</div>
-        <div class="post-time">${fmtDT(p.created_at)}</div>
+        <div class="post-time">${fmtDT(p.created_at)}${p.edited_at?" · изменено":""}</div>
       </div>
     </div>
     ${p.content?`<div class="post-content">${esc(p.content)}</div>`:""}
-    ${p.image_url?`<img class="post-image" src="${esc(p.image_url)}" alt="Фото публикации" loading="lazy">`:""}
+    ${imgs.length?`<div class="post-images n${imgs.length}">${imgs.map(u=>`<img src="${esc(u)}" alt="Фото" loading="lazy" onclick="openLightbox(this.src)">`).join("")}</div>`:""}
     <div class="post-actions">
-      <button class="action ${liked?"liked":""}" data-like-post="${p.id}" onclick="toggleLike('${p.id}')">${liked?"♥":"♡"} <span>${likes}</span></button>
+      <button class="action ${liked?"liked":""}" data-like-post="${p.id}" onclick="toggleLike('${p.id}')">${liked?"♥":"♡"}</button>
+      <button class="action cnt" data-like-count="${p.id}" title="Кто оценил" onclick="showLikers('${p.id}')">${likes}</button>
       <button class="action" onclick="showComments('${p.id}')">Комментарии <span data-comment-post="${p.id}">(${comments})</span></button>
-      ${p.user_id===me.id?`<button class="action" onclick="deletePost('${p.id}')">Удалить</button>`:""}
+      ${own?`<button class="action" onclick="editPost('${p.id}')">Изменить</button><button class="action" onclick="deletePost('${p.id}')">Удалить</button>`
+           :`<button class="action" onclick="reportPost('${p.id}')">Пожаловаться</button>`}
     </div>`;
   return div;
 }
 
-async function loadPostsInto(id, userId, emptyText){
+async function loadPostsInto(id,userId,emptyText){
   const box=$(id);
   if(!box||!userId) return;
-  const {data,error} = await db.from("posts").select(POST_SEL).eq("user_id",userId).order("created_at",{ascending:false});
+  const {data,error}=await db.from("posts").select(POST_SEL).eq("user_id",userId).order("created_at",{ascending:false});
   if(error){ box.innerHTML=`<div class="empty">${esc(error.message)}</div>`; return; }
-  await renderPosts(box,data,emptyText);
+  await renderPosts(box,data,emptyText,false);
 }
 
-async function loadFeed(){
+async function loadFeed(reset=true){
   const box=$("feed");
   if(!box||!me) return;
-  const {data,error} = await db.from("posts").select(POST_SEL).order("created_at",{ascending:false}).limit(50);
-  if(error){ box.innerHTML=`<div class="empty">Ошибка загрузки публикаций.<br><br>${esc(error.message)}</div>`; return; }
-  await renderPosts(box,data,"Пока нет публикаций.");
+  if(feedBusy){ if(reset) feedRetry=true; return; }
+  feedBusy=true;
+  if(reset){ feedOffset=0; feedDone=false; box.innerHTML=`<div class="loading"></div><div class="loading"></div>`; }
+  const {data,error}=await db.from("posts").select(POST_SEL).order("created_at",{ascending:false}).range(feedOffset,feedOffset+PAGE-1);
+  if(error){
+    feedBusy=false;
+    if(reset) box.innerHTML=`<div class="empty">Ошибка загрузки публикаций.<br><br>${esc(error.message)}</div>`;
+    return;
+  }
+  feedOffset+=data.length; feedDone=data.length<PAGE;
+  await renderPosts(box,data,"Пока нет публикаций.",!reset);
+  feedBusy=false;
+  if(feedRetry){ feedRetry=false; return loadFeed(true); }
+  checkFeedMore();
+}
+function checkFeedMore(){
+  if(feedDone) return;
+  requestAnimationFrame(()=>{
+    if($("page-feed").classList.contains("active") && $("feedEnd").getBoundingClientRect().top<innerHeight+300) loadFeed(false);
+  });
 }
 
-async function deletePost(id){
-  if(!confirm("Удалить эту публикацию?")) return;
-  const {error} = await db.from("posts").delete().eq("id",id).eq("user_id",me.id);
-  if(error) return alert("Ошибка удаления: "+error.message);
+function refreshPostLists(){
   loadFeed(); loadMyProfileStats(); loadMyProfilePosts();
   if(viewUser) loadPostsInto("otherProfilePosts",viewUser.id,"У пользователя пока нет публикаций.");
 }
 
-/* ---------- LIKES ---------- */
-function paintLike(buttons,liked,count){
-  buttons.forEach(b=>{ b.classList.toggle("liked",liked); b.innerHTML=`${liked?"♥":"♡"} <span>${count}</span>`; });
+async function deletePost(id){
+  if(!confirm("Удалить эту публикацию?")) return;
+  const {error}=await db.from("posts").delete().eq("id",id).eq("user_id",me.id);
+  if(error) return toast("Ошибка удаления: "+error.message);
+  refreshPostLists();
 }
 
-async function toggleLike(postId){
-  const buttons=[...document.querySelectorAll(`[data-like-post="${postId}"]`)];
-  if(!buttons.length || buttons[0].dataset.busy) return;
-  const was=buttons[0].classList.contains("liked");
-  const old=parseInt(buttons[0].querySelector("span").textContent)||0;
-  buttons.forEach(b=>b.dataset.busy="1");
-  paintLike(buttons,!was,Math.max(0,old+(was?-1:1)));
-  const {error} = was
-    ? await db.from("post_likes").delete().eq("post_id",postId).eq("user_id",me.id)
-    : await db.from("post_likes").insert({post_id:postId,user_id:me.id});
-  buttons.forEach(b=>delete b.dataset.busy);
-  if(error){ paintLike(buttons,was,old); alert(error.message); }
+function editPost(id){
+  const art=document.querySelector(`.post[data-post="${id}"]`);
+  if(!art||art.querySelector(".edit-box")) return;
+  const c=art.querySelector(".post-content");
+  const box=document.createElement("div"); box.className="edit-box";
+  box.innerHTML=`<textarea class="textarea"></textarea><div style="display:flex;gap:7px;margin-top:7px"><button class="primary small">Сохранить</button><button class="outline small">Отмена</button></div>`;
+  const ta=box.querySelector("textarea"); ta.value=c?c.textContent:"";
+  if(c){ c.style.display="none"; c.after(box); } else art.querySelector(".post-head").after(box);
+  const [save,cancel]=box.querySelectorAll("button");
+  cancel.onclick=()=>{ box.remove(); if(c) c.style.display=""; };
+  save.onclick=async()=>{
+    const text=ta.value.trim();
+    const {error}=await db.from("posts").update({content:text,edited_at:new Date().toISOString()}).eq("id",id).eq("user_id",me.id);
+    if(error) return toast(error.message);
+    toast("Публикация изменена"); refreshPostLists();
+  };
+  ta.focus();
+}
+
+async function reportPost(id){
+  const reason=prompt("Причина жалобы:");
+  if(reason===null) return;
+  const {error}=await db.from("reports").insert({reporter_id:me.id,post_id:id,reason:reason.trim()||"—"});
+  toast(error?error.message:"Жалоба отправлена. Спасибо!");
+}
+
+/* ---------- BLOCKS ---------- */
+async function blockUser(uid){
+  if(!confirm("Заблокировать пользователя? Вы не увидите его публикации, а дружба будет удалена.")) return;
+  const {error}=await db.from("blocks").insert({blocker_id:me.id,blocked_id:uid});
+  if(error) return toast(error.message);
+  const f=await getFriendship(uid);
+  if(f) await db.from("friendships").delete().eq("id",f.id);
+  blocked.add(uid); toast("Пользователь заблокирован");
+  if(viewUser?.id===uid) renderOtherProfile(viewUser);
+  loadFeed(); loadPeople(); loadFriends(); loadChats(); refreshUnread(); loadMyProfileStats();
+}
+async function unblockUser(uid){
+  const {error}=await db.from("blocks").delete().eq("blocker_id",me.id).eq("blocked_id",uid);
+  if(error) return toast(error.message);
+  blocked.delete(uid); toast("Пользователь разблокирован");
+  if(viewUser?.id===uid) renderOtherProfile(viewUser);
+  loadFeed(); loadPeople();
+}
+async function openBlocked(){
+  openSheet("Заблокированные");
+  const body=$("sheetBody"), ids=[...blocked];
+  if(!ids.length){ body.innerHTML=`<div class="empty">Список пуст.</div>`; return; }
+  const {data}=await db.from("profiles").select("*").in("id",ids);
+  body.innerHTML="";
+  (data||[]).forEach(u=>body.appendChild(userRow(u,`<button class="outline small" onclick="unblockUser('${u.id}');closeSheet()">Разблокировать</button>`)));
+}
+
+/* ---------- LIKES ---------- */
+function paintLike(id,liked,count){
+  document.querySelectorAll(`[data-like-post="${id}"]`).forEach(b=>{ b.classList.toggle("liked",liked); b.textContent=liked?"♥":"♡"; });
+  document.querySelectorAll(`[data-like-count="${id}"]`).forEach(b=>{ b.textContent=count; });
+}
+
+async function toggleLike(id){
+  const btns=[...document.querySelectorAll(`[data-like-post="${id}"]`)];
+  if(!btns.length||btns[0].dataset.busy) return;
+  const was=btns[0].classList.contains("liked");
+  const old=parseInt(document.querySelector(`[data-like-count="${id}"]`).textContent)||0;
+  btns.forEach(b=>b.dataset.busy="1");
+  paintLike(id,!was,Math.max(0,old+(was?-1:1)));
+  const {error}=was
+    ? await db.from("post_likes").delete().eq("post_id",id).eq("user_id",me.id)
+    : await db.from("post_likes").insert({post_id:id,user_id:me.id});
+  btns.forEach(b=>delete b.dataset.busy);
+  if(error){ paintLike(id,was,old); toast(error.message); }
 }
 
 async function refreshLikes(){
   const ids=[...new Set([...document.querySelectorAll("[data-like-post]")].map(b=>b.dataset.likePost))];
   if(!ids.length) return;
-  const {data} = await db.from("post_likes").select("post_id,user_id").in("post_id",ids);
-  const lc={}, mine=new Set();
+  const {data}=await db.from("post_likes").select("post_id,user_id").in("post_id",ids);
+  const lc={},mine=new Set();
   (data||[]).forEach(l=>{ lc[l.post_id]=(lc[l.post_id]||0)+1; if(l.user_id===me.id) mine.add(String(l.post_id)); });
   ids.forEach(id=>{
-    const bs=[...document.querySelectorAll(`[data-like-post="${id}"]`)].filter(b=>!b.dataset.busy);
-    paintLike(bs,mine.has(String(id)),lc[id]||0);
+    const b=document.querySelector(`[data-like-post="${id}"]`);
+    if(b&&!b.dataset.busy) paintLike(id,mine.has(String(id)),lc[id]||0);
   });
 }
 
+async function showLikers(id){
+  openSheet("Понравилось");
+  const body=$("sheetBody");
+  const {data}=await db.from("post_likes").select("user_id").eq("post_id",id);
+  const ids=(data||[]).map(x=>x.user_id);
+  if(!ids.length){ body.innerHTML=`<div class="empty">Пока никто не оценил.</div>`; return; }
+  const {data:ps}=await db.from("profiles").select("*").in("id",ids);
+  body.innerHTML="";
+  (ps||[]).forEach(u=>body.appendChild(userRow(u,"")));
+}
+
 /* ---------- COMMENTS ---------- */
+let replyTo=null;
+
 async function refreshCommentCounts(){
   const ids=[...new Set([...document.querySelectorAll("[data-comment-post]")].map(e=>e.dataset.commentPost))];
   if(!ids.length) return;
-  const {data} = await db.from("comments").select("post_id").in("post_id",ids);
+  const {data}=await db.from("comments").select("post_id").in("post_id",ids);
   const cc={};
   (data||[]).forEach(c=>{ cc[c.post_id]=(cc[c.post_id]||0)+1; });
   ids.forEach(id=>document.querySelectorAll(`[data-comment-post="${id}"]`).forEach(e=>e.textContent=`(${cc[id]||0})`));
 }
 
+function startReply(id,name){
+  replyTo={id,name};
+  $("replyName").textContent=name;
+  $("replyBar").classList.add("show");
+  $("commentInput").focus();
+}
+function cancelReply(){ replyTo=null; $("replyBar").classList.remove("show"); }
+
 async function showComments(postId){
-  commentsPost=postId;
+  commentsPost=postId; cancelReply();
   $("commentsModal").classList.add("open");
   document.body.classList.add("comments-open");
-  $("commentsList").innerHTML=`<div class="loading">Загрузка...</div>`;
+  $("commentsList").innerHTML=`<div class="loading"></div><div class="loading"></div>`;
   $("commentInput").value="";
   await loadComments(postId);
-  $("commentInput").focus();
 }
 
 async function loadComments(postId){
-  const list=$("commentsList");
-  const {data,error} = await db.from("comments").select(`*,profiles(id,username,full_name,avatar_url)`).eq("post_id",postId).order("created_at",{ascending:true});
+  const list=$("commentsList"), st=list.scrollTop;
+  const {data,error}=await db.from("comments").select(`*,profiles(id,username,full_name,avatar_url)`).eq("post_id",postId).order("created_at",{ascending:true});
   if(error){ list.innerHTML=`<div class="empty">${esc(error.message)}</div>`; return; }
-  if(!data?.length){ list.innerHTML=`<div class="empty">Пока нет комментариев.</div>`; return; }
+  const rows=(data||[]).filter(c=>!blocked.has(c.user_id));
+  if(!rows.length){ list.innerHTML=`<div class="empty">Пока нет комментариев.</div>`; return; }
+  const ids=new Set(rows.map(c=>String(c.id)));
+  const {data:lk}=await db.from("comment_likes").select("comment_id,user_id").in("comment_id",rows.map(c=>c.id));
+  const lc={},mine=new Set();
+  (lk||[]).forEach(l=>{ lc[l.comment_id]=(lc[l.comment_id]||0)+1; if(l.user_id===me.id) mine.add(l.comment_id); });
+  const kids={},tops=[];
+  rows.forEach(c=>{
+    if(c.parent_id&&ids.has(String(c.parent_id))) (kids[c.parent_id]=kids[c.parent_id]||[]).push(c);
+    else tops.push(c);
+  });
   list.innerHTML="";
-  data.forEach(c=>{
-    const item=document.createElement("div"); item.className="comment-item";
-    item.innerHTML = `
-      <div class="comment-author" onclick="openUserProfile('${c.user_id}')">${esc(nameOf(c.profiles))}</div>
+  const add=(c,reply)=>{
+    const liked=mine.has(c.id), nm=nameOf(c.profiles);
+    const item=document.createElement("div"); item.className="comment-item"+(reply?" reply":"");
+    item.innerHTML=`
+      <div class="comment-author" onclick="openUserProfile('${c.user_id}')">${esc(nm)}</div>
       <div class="comment-text">${esc(c.content)}</div>
       <div class="post-time">${fmtDT(c.created_at)}</div>
-      ${c.user_id===me.id?`<button class="action" style="margin-top:5px" onclick="deleteComment('${c.id}')">Удалить</button>`:""}`;
+      <div class="comment-actions">
+        <button class="action" onclick="toggleCommentLike('${c.id}',${liked})">${liked?"♥":"♡"} ${lc[c.id]||0}</button>
+        <button class="action" onclick="startReply('${reply?c.parent_id:c.id}',${JSON.stringify(nm).replace(/"/g,"&quot;")})">Ответить</button>
+        ${c.user_id===me.id?`<button class="action" onclick="deleteComment('${c.id}')">Удалить</button>`:""}
+      </div>`;
     list.appendChild(item);
-  });
-  list.scrollTop=list.scrollHeight;
+    (kids[c.id]||[]).forEach(k=>add(k,true));
+  };
+  tops.forEach(c=>add(c,false));
+  list.scrollTop=st;
+}
+
+async function toggleCommentLike(id,was){
+  const {error}=was
+    ? await db.from("comment_likes").delete().eq("comment_id",id).eq("user_id",me.id)
+    : await db.from("comment_likes").insert({comment_id:id,user_id:me.id});
+  if(error) return toast(error.message);
+  if(commentsPost) loadComments(commentsPost);
 }
 
 async function sendComment(){
   if(!commentsPost) return;
   const input=$("commentInput"), content=input.value.trim();
   if(!content) return;
-  const {error} = await db.from("comments").insert({post_id:commentsPost,user_id:me.id,content});
-  if(error) return alert(error.message);
-  input.value="";
+  const {error}=await db.from("comments").insert({post_id:commentsPost,user_id:me.id,content,parent_id:replyTo?replyTo.id:null});
+  if(error) return toast(error.message);
+  input.value=""; cancelReply();
   await loadComments(commentsPost);
+  $("commentsList").scrollTop=$("commentsList").scrollHeight;
   refreshCommentCounts();
 }
 
 async function deleteComment(id){
   if(!confirm("Удалить комментарий?")) return;
-  const {error} = await db.from("comments").delete().eq("id",id).eq("user_id",me.id);
-  if(error) return alert(error.message);
+  const {error}=await db.from("comments").delete().eq("id",id).eq("user_id",me.id);
+  if(error) return toast(error.message);
   if(commentsPost) await loadComments(commentsPost);
   refreshCommentCounts();
 }
 
 function closeComments(){
-  commentsPost=null;
+  commentsPost=null; cancelReply();
   $("commentsModal").classList.remove("open");
   document.body.classList.remove("comments-open");
 }
@@ -905,7 +1175,7 @@ async function myFriends(){
   const {data,error} = await db.from("friendships").select(FSEL).eq("status","accepted")
     .or(`sender_id.eq.${me.id},receiver_id.eq.${me.id}`);
   if(error) throw error;
-  return (data||[]).map(f=>f.sender_id===me.id?f.receiver:f.sender).filter(Boolean);
+  return (data||[]).map(f=>f.sender_id===me.id?f.receiver:f.sender).filter(u=>u&&!blocked.has(u.id));
 }
 
 function userRow(u, extra){
@@ -960,6 +1230,7 @@ async function loadPeople(){
   const search=$("peopleSearch").value.trim().toLowerCase();
   const gf=$("genderFilter").value, af=$("ageFilter").value, year=new Date().getFullYear();
   const users=data.filter(u=>{
+    if(blocked.has(u.id)) return false;
     if(search && !((u.full_name||"").toLowerCase().includes(search)||(u.username||"").toLowerCase().includes(search))) return false;
     if(gf && u.gender!==gf) return false;
     if(af){
@@ -992,7 +1263,7 @@ async function openUserProfile(uid){
   if(!uid || uid===me.id){ closeComments(); return showPage("profile"); }
   const {data:user,error} = await db.from("profiles").select("*").eq("id",uid).single();
   if(error||!user) return alert(error?.message||"Пользователь не найден");
-  closeComments();
+  closeComments(); closeSheet(); closeSettings();
   const act=document.querySelector(".page.active");
   if(act && act.id!=="page-user-profile" && act.id!=="page-chat") prevPage=act.id.replace("page-","");
   viewUser=user;
@@ -1017,18 +1288,44 @@ async function renderOtherProfile(u){
   const {data:fr} = await db.from("friendships").select("id").eq("status","accepted").or(`sender_id.eq.${u.id},receiver_id.eq.${u.id}`);
   $("otherFriendsCount").textContent=fr?.length||0;
 
-  const box=$("otherProfileActions"), f=await getFriendship(u.id);
+  const box=$("otherProfileActions");
+  if(blocked.has(u.id)){
+    box.innerHTML=`<button class="outline" onclick="unblockUser('${u.id}')">Разблокировать</button>`;
+    $("otherProfilePosts").innerHTML=`<div class="empty">Пользователь заблокирован.</div>`;
+    return;
+  }
+  const f=await getFriendship(u.id);
   if(!f) box.innerHTML=`<button class="primary" onclick="addFriend('${u.id}')">Добавить в друзья</button>`;
   else if(f.status==="pending")
     box.innerHTML = f.sender_id===me.id
       ? `<button class="outline" disabled>Заявка отправлена</button>`
       : `<button class="primary" onclick="acceptFriend('${f.id}')">Принять заявку</button>`;
   else box.innerHTML=`<button class="outline" onclick="openChat('${u.id}')">Написать</button><button class="outline" onclick="removeFriend('${u.id}')">Удалить из друзей</button>`;
+  box.insertAdjacentHTML("beforeend",`<button class="outline" onclick="blockUser('${u.id}')">Заблокировать</button>`);
 
   loadPostsInto("otherProfilePosts",u.id,"У пользователя пока нет публикаций.");
 }
 
 /* ---------- CHATS ---------- */
+let unread={}, typingCh=null, typingTimer=null, lastTyping=0;
+
+function setBadge(page,n){
+  document.querySelectorAll(`[data-p="${page}"]`).forEach(b=>{
+    let s=b.querySelector(".badge");
+    if(!n){ s&&s.remove(); return; }
+    if(!s){ s=document.createElement("span"); s.className="badge"; b.appendChild(s); }
+    s.textContent=n>99?"99+":n;
+  });
+}
+
+async function refreshUnread(){
+  if(!me) return;
+  const {data}=await db.from("direct_messages").select("sender_id").eq("receiver_id",me.id).is("read_at",null);
+  unread={};
+  (data||[]).forEach(m=>{ if(!blocked.has(m.sender_id)) unread[m.sender_id]=(unread[m.sender_id]||0)+1; });
+  setBadge("chats",Object.values(unread).reduce((a,b)=>a+b,0));
+}
+
 async function loadChats(){
   const box=$("chatList");
   if(!box||!me) return;
@@ -1036,9 +1333,8 @@ async function loadChats(){
   try{ friends=await myFriends(); }
   catch(e){ box.innerHTML=`<div class="empty">${esc(e.message)}</div>`; return; }
   if(!friends.length){ box.innerHTML=`<div class="empty">Добавь друзей, чтобы начать переписку.</div>`; return; }
-
   const items=await Promise.all(friends.map(async u=>{
-    const {data:last} = await db.from("direct_messages").select("*")
+    const {data:last}=await db.from("direct_messages").select("*")
       .or(`and(sender_id.eq.${me.id},receiver_id.eq.${u.id}),and(sender_id.eq.${u.id},receiver_id.eq.${me.id})`)
       .order("created_at",{ascending:false}).limit(1).maybeSingle();
     return {u,last};
@@ -1046,32 +1342,40 @@ async function loadChats(){
   box.innerHTML="";
   items.forEach(({u,last})=>{
     const div=document.createElement("div"); div.className="chat-item";
-    div.innerHTML = `
+    div.innerHTML=`
       <div class="avatar">${avHtml(u)}</div>
       <div class="chat-item-info">
         <div class="chat-item-name">${esc(nameOf(u))}</div>
         <div class="chat-user-status">${esc(lastSeenText(u))}</div>
         <div class="chat-last">${esc(last?(last.content||(last.image_url?"Фото":"")):"Нет сообщений")}</div>
-      </div>`;
+      </div>
+      ${unread[u.id]?`<span class="badge">${unread[u.id]}</span>`:""}`;
     div.onclick=()=>openChat(u.id);
     box.appendChild(div);
   });
 }
 
 async function openChat(uid){
-  const {data:u,error} = await db.from("profiles").select("*").eq("id",uid).single();
-  if(error||!u) return alert(error?.message||"Пользователь не найден");
+  const {data:u,error}=await db.from("profiles").select("*").eq("id",uid).single();
+  if(error||!u) return toast(error?.message||"Пользователь не найден");
   chatUser=u; viewUser=null;
   setPage("chat");
   $("chatName").textContent=nameOf(u);
   $("chatStatus").textContent=lastSeenText(u);
   setAvatar($("chatAvatar"),u);
+  joinTyping();
   await loadMessages();
+}
+
+async function markRead(){
+  if(!chatUser) return;
+  await db.from("direct_messages").update({read_at:new Date().toISOString()}).eq("receiver_id",me.id).eq("sender_id",chatUser.id).is("read_at",null);
+  refreshUnread();
 }
 
 async function loadMessages(){
   if(!chatUser) return;
-  const {data,error} = await db.from("direct_messages").select("*")
+  const {data,error}=await db.from("direct_messages").select("*")
     .or(`and(sender_id.eq.${me.id},receiver_id.eq.${chatUser.id}),and(sender_id.eq.${chatUser.id},receiver_id.eq.${me.id})`)
     .order("created_at",{ascending:true});
   const box=$("messages");
@@ -1079,22 +1383,23 @@ async function loadMessages(){
   if(error){ box.innerHTML=`<div class="empty">${esc(error.message)}</div>`; return; }
   if(!data?.length){ box.innerHTML=`<div class="empty">Начните разговор.</div>`; return; }
   data.forEach(m=>{
-    const row=document.createElement("div");
-    row.className="message-row"+(m.sender_id===me.id?" mine":"");
-    row.innerHTML = `<div class="message">
-      ${m.image_url?`<img class="message-photo" src="${esc(m.image_url)}" alt="Фото" loading="lazy">`:""}
+    const own=m.sender_id===me.id;
+    const row=document.createElement("div"); row.className="message-row"+(own?" mine":"");
+    row.innerHTML=`<div class="message">
+      ${m.image_url?`<img class="message-photo" src="${esc(m.image_url)}" alt="Фото" loading="lazy" onclick="openLightbox(this.src)">`:""}
       ${m.content?`<div>${esc(m.content)}</div>`:""}
-      <div class="message-time">${fmtT(m.created_at)}</div></div>`;
+      <div class="message-time">${fmtT(m.created_at)}${own?`<span class="tick">${m.read_at?"✓✓":"✓"}</span>`:""}</div></div>`;
     box.appendChild(row);
   });
   box.scrollTop=box.scrollHeight;
+  if(data.some(m=>m.receiver_id===me.id&&!m.read_at)) markRead();
 }
 
 function previewChatPhoto(e){
   const f=e.target.files?.[0];
   if(!f) return;
-  if(!f.type.startsWith("image/")){ e.target.value=""; return alert("Можно выбрать только изображение"); }
-  if(f.size>10*1024*1024){ e.target.value=""; return alert("Максимальный размер фото — 10 MB"); }
+  if(!f.type.startsWith("image/")){ e.target.value=""; return toast("Можно выбрать только изображение"); }
+  if(f.size>10*1024*1024){ e.target.value=""; return toast("Максимальный размер фото — 10 MB"); }
   selChatPhoto=f;
   const r=new FileReader();
   r.onload=ev=>{ $("chatPreviewImage").src=ev.target.result; $("chatPhotoPreview").style.display="block"; };
@@ -1110,40 +1415,106 @@ async function sendMessage(){
   if(!content && !selChatPhoto) return;
   const btn=document.querySelector(".send"); btn.disabled=true;
   try{
-    const image_url = selChatPhoto ? await uploadFile("chat-images",selChatPhoto) : null;
-    const {error} = await db.from("direct_messages").insert({sender_id:me.id,receiver_id:chatUser.id,content,image_url});
+    const image_url=selChatPhoto?await uploadFile("chat-images",selChatPhoto):null;
+    const {error}=await db.from("direct_messages").insert({sender_id:me.id,receiver_id:chatUser.id,content,image_url});
     if(error) throw error;
     input.value=""; removeChatPhoto();
     await loadMessages(); loadChats();
-  }catch(err){ alert("Ошибка отправки:\n"+err.message); }
+  }catch(err){ toast("Ошибка отправки: "+err.message); }
   finally{ btn.disabled=false; }
 }
 
-function closeChat(){ showPage("chats"); }
+/* typing */
+function joinTyping(){
+  leaveTyping();
+  const name="typing-"+[me.id,chatUser.id].sort().join("-");
+  typingCh=db.channel(name).on("broadcast",{event:"typing"},({payload})=>{
+    if(payload?.from!==chatUser?.id) return;
+    $("chatStatus").textContent="печатает...";
+    clearTimeout(typingTimer);
+    typingTimer=setTimeout(()=>{ if(chatUser) $("chatStatus").textContent=lastSeenText(chatUser); },3000);
+  }).subscribe();
+}
+function leaveTyping(){ if(typingCh){ db.removeChannel(typingCh); typingCh=null; } }
+function sendTyping(){
+  if(!typingCh||Date.now()-lastTyping<1500) return;
+  lastTyping=Date.now();
+  typingCh.send({type:"broadcast",event:"typing",payload:{from:me.id}});
+}
+
+function closeChat(){ leaveTyping(); showPage("chats"); }
+
+/* ---------- NOTIFICATIONS ---------- */
+function setBellBadge(n){ const b=$("bellBadge"); b.textContent=n>99?"99+":n; b.classList.toggle("hidden",!n); }
+async function refreshNotifBadge(){
+  if(!me) return;
+  const {count}=await db.from("notifications").select("id",{count:"exact",head:true}).eq("user_id",me.id).eq("is_read",false);
+  setBellBadge(count||0);
+}
+async function loadNotifs(){
+  const box=$("notifList");
+  if(!box||!me) return;
+  box.innerHTML=`<div class="loading"></div><div class="loading"></div>`;
+  const {data,error}=await db.from("notifications").select(`*,actor:profiles!notifications_actor_id_fkey(id,username,full_name,avatar_url)`).eq("user_id",me.id).order("created_at",{ascending:false}).limit(40);
+  if(error){ box.innerHTML=`<div class="empty">${esc(error.message)}</div>`; return; }
+  const rows=(data||[]).filter(n=>!blocked.has(n.actor_id));
+  if(!rows.length){ box.innerHTML=`<div class="empty">Пока нет уведомлений.</div>`; return; }
+  const T={friend_request:"хочет добавить вас в друзья",like:"оценил(а) вашу публикацию",comment:"прокомментировал(а) вашу публикацию",reply:"ответил(а) на ваш комментарий",comment_like:"оценил(а) ваш комментарий"};
+  box.innerHTML="";
+  rows.forEach(n=>{
+    const d=document.createElement("div"); d.className="notif"+(n.is_read?"":" unread");
+    d.innerHTML=`<div class="avatar">${avHtml(n.actor)}</div><div class="notif-text"><b>${esc(nameOf(n.actor))}</b> ${T[n.type]||""}<div class="post-time">${fmtDT(n.created_at)}</div></div>`;
+    d.onclick=()=>{ if(["comment","reply","comment_like"].includes(n.type)&&n.post_id) showComments(n.post_id); else openUserProfile(n.actor_id); };
+    box.appendChild(d);
+  });
+  await db.from("notifications").update({is_read:true}).eq("user_id",me.id).eq("is_read",false);
+  setBellBadge(0);
+}
 
 /* ---------- REALTIME ---------- */
+let profTimer=null;
 function subscribeRealtime(){
   if(channel) db.removeChannel(channel);
-  const on=(table,fn)=>({event:"*",schema:"public",table,fn});
+  const active=id=>$("page-"+id).classList.contains("active");
+  const H=[
+    ["direct_messages",null,async()=>{ if(chatUser) await loadMessages(); loadChats(); refreshUnread(); }],
+    ["posts",null,()=>{
+      if(document.querySelector(".content").scrollTop<300) loadFeed();
+      loadMyProfileStats(); loadMyProfilePosts();
+      if(viewUser) loadPostsInto("otherProfilePosts",viewUser.id,"У пользователя пока нет публикаций.");
+    }],
+    ["post_likes",null,()=>refreshLikes()],
+    ["comments",null,async()=>{ if(commentsPost) await loadComments(commentsPost); refreshCommentCounts(); }],
+    ["comment_likes",null,()=>{ if(commentsPost) loadComments(commentsPost); }],
+    ["friendships",null,()=>{ loadPeople(); loadFriends(); loadChats(); loadMyProfileStats(); if(viewUser) renderOtherProfile(viewUser); }],
+    ["profiles",null,()=>{
+      if(profTimer) return;
+      profTimer=setTimeout(async()=>{
+        profTimer=null;
+        if(active("people")) loadPeople();
+        if(active("friends")) loadFriends();
+        if(active("chats")) loadChats();
+        if(chatUser){
+          const {data:u}=await db.from("profiles").select("*").eq("id",chatUser.id).maybeSingle();
+          if(u){ chatUser=u; if($("chatStatus").textContent!=="печатает...") $("chatStatus").textContent=lastSeenText(u); }
+        }
+        if(viewUser){
+          const {data:u}=await db.from("profiles").select("*").eq("id",viewUser.id).maybeSingle();
+          if(u){ viewUser=u; renderOtherProfile(u); }
+        }
+      },4000);
+    }],
+    ["notifications","user_id=eq."+me.id,()=>{
+      refreshNotifBadge();
+      if(active("notifs")) loadNotifs(); else toast("🔔 Новое уведомление");
+    }]
+  ];
   let c=db.channel("social-"+me.id);
-  [
-    on("direct_messages",async()=>{ if(chatUser) await loadMessages(); loadChats(); }),
-    on("posts",()=>{ loadFeed(); loadMyProfileStats(); loadMyProfilePosts(); if(viewUser) loadPostsInto("otherProfilePosts",viewUser.id,"У пользователя пока нет публикаций."); }),
-    on("post_likes",()=>refreshLikes()),
-    on("comments",async()=>{ if(commentsPost) await loadComments(commentsPost); refreshCommentCounts(); }),
-    on("friendships",async()=>{ loadPeople(); loadFriends(); loadChats(); loadMyProfileStats(); if(viewUser) renderOtherProfile(viewUser); }),
-    on("profiles",async()=>{
-      loadPeople(); loadFriends(); loadChats();
-      if(chatUser){
-        const {data:u}=await db.from("profiles").select("*").eq("id",chatUser.id).maybeSingle();
-        if(u){ chatUser=u; $("chatStatus").textContent=lastSeenText(u); }
-      }
-      if(viewUser){
-        const {data:u}=await db.from("profiles").select("*").eq("id",viewUser.id).maybeSingle();
-        if(u){ viewUser=u; renderOtherProfile(u); }
-      }
-    })
-  ].forEach(o=>{ c=c.on("postgres_changes",{event:o.event,schema:o.schema,table:o.table},o.fn); });
+  H.forEach(([table,filter,fn])=>{
+    const cfg={event:table==="notifications"?"INSERT":"*",schema:"public",table};
+    if(filter) cfg.filter=filter;
+    c=c.on("postgres_changes",cfg,fn);
+  });
   channel=c.subscribe();
 }
 
@@ -1154,6 +1525,17 @@ document.addEventListener("keydown",e=>{
   if($("commentsModal").classList.contains("open")) closeComments();
   if($("editProfileModal").classList.contains("open")) closeEditProfile();
 });
+
+/* ---------- EXTRA ---------- */
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape") return;
+  closeLightbox(); closeSheet();
+});
+new IntersectionObserver(es=>{
+  if(es[0].isIntersecting && !feedDone && !feedBusy && me && $("page-feed").classList.contains("active")) loadFeed(false);
+},{root:document.querySelector(".content"),rootMargin:"300px"}).observe($("feedEnd"));
+
+if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 </script>
 </body>
 </html>
