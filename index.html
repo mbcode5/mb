@@ -266,6 +266,10 @@ body.in-chat .page.chat-page{padding:0}
 .chat-input input{font-size:16px}
 .message{max-width:86%}
 }
+#ctx{position:fixed;z-index:950;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.4);min-width:170px;overflow:hidden;animation:pop .15s ease}
+#ctx button{display:block;width:100%;text-align:left;padding:13px 16px;border:0;background:transparent;color:var(--text)}
+#ctx button:hover{background:var(--hover)}
+.message{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 </style>
 </head>
 <body>
@@ -298,7 +302,7 @@ body.in-chat .page.chat-page{padding:0}
   <header class="topbar">
     <div class="logo">MB</div>
     <div class="top-actions">
-      <button class="icon-btn" onclick="showPage('notifs')">🔔<span id="bellBadge" class="badge hidden"></span></button>
+      <button class="icon-btn" onclick="showPage('notifs')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span id="bellBadge" class="badge hidden"></span></button>
       <button class="icon-btn" onclick="openSettings()">☰</button>
     </div>
   </header>
@@ -525,7 +529,7 @@ body.in-chat .page.chat-page{padding:0}
     <div class="settings-item"><div style="display:grid;gap:8px">
       <button class="outline" onclick="openSaved()">Сохранённые посты</button>
       <button class="outline" onclick="shareProfile()">Ссылка на мой профиль</button>
-      <button class="outline" onclick="enablePush()">Push-уведомления</button>
+      <button class="outline" onclick="enableNotifs()">Уведомления и звук</button>
       <a id="sAdmin" class="outline hidden" href="admin.html" style="min-height:42px;display:flex;align-items:center;justify-content:center;text-decoration:none;color:inherit">Модерация жалоб</a>
       <div id="sInstall"></div>
     </div></div>
@@ -613,18 +617,18 @@ function openSheet(title){ $("sheetTitle").textContent=title; $("sheetBody").inn
 function closeSheet(){ $("sheet").classList.remove("open"); }
 
 async function deleteAccount(){
-  if(!confirm("Удалить аккаунт навсегда? Все ваши посты, комментарии и сообщения будут удалены.")) return;
-  if(!confirm("Это действие нельзя отменить. Удалить?")) return;
-  const {error}=await db.rpc("delete_my_account");
-  if(error) return toast("Не удалось удалить: "+error.message);
-  closeSettings();
-  await db.auth.signOut();
-  toast("Аккаунт удалён");
+  if(!confirm("Удалить аккаунт навсегда? Мы отправим код на вашу почту.")) return;
+  const {error}=await db.auth.signInWithOtp({email:me.email,options:{shouldCreateUser:false}});
+  if(error) return toast(error.message);
+  codeSheet("Удаление аккаунта","Код отправлен на "+me.email,async code=>{
+    const {error:e}=await db.auth.verifyOtp({email:me.email,token:code,type:"email"}); if(e) throw e;
+    const {error:e2}=await db.rpc("delete_my_account"); if(e2) throw e2;
+    closeSheet(); closeSettings(); await db.auth.signOut(); toast("Аккаунт удалён");
+  });
 }
 
 /* ---------- AUTH ---------- */
 db.auth.onAuthStateChange(async (event, session)=>{
-  if(event==="PASSWORD_RECOVERY") setTimeout(newPassSheet,400);
   if(session){
     me = session.user;
     $("auth").classList.add("hidden");
@@ -668,15 +672,16 @@ async function register(){
   const email=$("regEmail").value.trim(), password=$("regPassword").value;
   if(!username||!name||!email||!password) return alert("Заполните все поля");
   if(!/^[a-zA-Z0-9_.]{3,30}$/.test(username)) return alert("Username: 3–30 символов, только буквы, цифры, _ и .");
+  if(password.length<6) return alert("Пароль минимум 6 символов");
   const {data:free}=await db.rpc("username_free",{u:username});
   if(free===false) return alert("Этот username уже занят. Один username — один человек.");
-  const {data,error} = await db.auth.signUp({email,password,options:{data:{username,full_name:name}}});
+  const {data,error}=await db.auth.signUp({email,password,options:{data:{username,full_name:name}}});
   if(error) return alert(error.message);
-  if(data.user){
-    const {error:e} = await db.from("profiles").insert({id:data.user.id,username,full_name:name});
-    if(e){ console.error(e); if(e.code==="23505") return alert("Этот username уже занят."); }
-  }
-  alert("Аккаунт создан. Если требуется подтверждение email — подтвердите почту.");
+  if(data.session) return;
+  codeSheet("Подтвердите email","Мы отправили код на "+email,async code=>{
+    const {error:e}=await db.auth.verifyOtp({email,token:code,type:"signup"}); if(e) throw e;
+    closeSheet();
+  });
 }
 
 async function logout(){
@@ -733,6 +738,7 @@ async function loadMyProfile(){
     data = r.data;
   }
   myProfile = data;
+  if(data?.is_banned){ await db.auth.signOut(); return alert("Ваш аккаунт заблокирован модератором."); }
   renderMyProfile();
 }
 
@@ -942,9 +948,9 @@ function postEl(p,likes,liked,comments){
       <button class="action ${liked?"liked":""}" data-like-post="${p.id}" onclick="toggleLike('${p.id}')">${liked?"♥":"♡"}</button>
       <button class="action cnt" data-like-count="${p.id}" title="Кто оценил" onclick="showLikers('${p.id}')">${likes}</button>
       <button class="action" onclick="toggleSave('${p.id}',this)">${savedSet.has(String(p.id))?"★":"☆"}</button>
-      <button class="action" onclick="showComments('${p.id}')">Комментарии <span data-comment-post="${p.id}">(${comments})</span></button>
+      <button class="action" onclick="showComments('${p.id}')">${IC_C} <span data-comment-post="${p.id}">${comments}</span></button>
       ${own?`<button class="action" onclick="editPost('${p.id}')">Изменить</button><button class="action" onclick="deletePost('${p.id}')">Удалить</button>`
-           :`<button class="action" onclick="reportPost('${p.id}')">Пожаловаться</button>`}
+           :`<button class="action" style="margin-left:auto;opacity:.3;padding:0 8px" title="Пожаловаться" onclick="reportPost('${p.id}')">⚑</button>`}
     </div>`;
   return div;
 }
@@ -1099,7 +1105,7 @@ async function refreshCommentCounts(){
   const {data}=await db.from("comments").select("post_id").in("post_id",ids);
   const cc={};
   (data||[]).forEach(c=>{ cc[c.post_id]=(cc[c.post_id]||0)+1; });
-  ids.forEach(id=>document.querySelectorAll(`[data-comment-post="${id}"]`).forEach(e=>e.textContent=`(${cc[id]||0})`));
+  ids.forEach(id=>document.querySelectorAll(`[data-comment-post="${id}"]`).forEach(e=>e.textContent=cc[id]||0));
 }
 
 function startReply(id,name){
@@ -1166,7 +1172,8 @@ async function sendComment(){
   if(!commentsPost) return;
   const input=$("commentInput"), content=input.value.trim();
   if(!content) return;
-  const {error}=await db.from("comments").insert({post_id:commentsPost,user_id:me.id,content,parent_id:replyTo?replyTo.id:null});
+  let {error}=await db.from("comments").insert({post_id:commentsPost,user_id:me.id,content,parent_id:replyTo?replyTo.id:null});
+  if(error&&/parent_id/.test(error.message)) ({error}=await db.from("comments").insert({post_id:commentsPost,user_id:me.id,content}));
   if(error) return toast(error.message);
   input.value=""; cancelReply();
   await loadComments(commentsPost);
@@ -1329,7 +1336,7 @@ function closeUserProfile(){ showPage(prevPage||"feed"); }
 
 async function renderOtherProfile(u){
   if(!u) return;
-  $("otherProfileName").innerHTML=esc(nameOf(u))+vb(u); setCover($("otherCover"),u.cover_url);
+  $("otherProfileName").innerHTML=esc(nameOf(u))+vb(u)+(u.is_private?" 🔒":""); setCover($("otherCover"),u.cover_url);
   $("otherProfileUsername").textContent="@"+u.username;
   $("otherProfileBio").textContent=u.bio||"Пользователь пока ничего не написал о себе.";
   $("otherBirth").textContent=u.birth_year||"Не указан";
@@ -1357,7 +1364,7 @@ async function renderOtherProfile(u){
   else box.innerHTML=`<button class="outline" onclick="openChat('${u.id}')">Написать</button><button class="outline" onclick="removeFriend('${u.id}')">Удалить из друзей</button>`;
   box.insertAdjacentHTML("beforeend",`<button class="outline" onclick="blockUser('${u.id}')">Заблокировать</button>`);
 
-  if(u.is_private&&f?.status!=="accepted"){ $("otherProfilePosts").innerHTML=`<div class="empty">Закрытый профиль. Добавьте в друзья, чтобы видеть публикации.</div>`; return; }
+  if(u.is_private&&f?.status!=="accepted"){ $("otherProfileBio").textContent="🔒 Закрытый профиль"; $("otherProfilePosts").innerHTML=`<div class="empty">Закрытый профиль. Добавьте в друзья, чтобы видеть публикации.</div>`; return; }
   loadPostsInto("otherProfilePosts",u.id,"У пользователя пока нет публикаций.");
 }
 
@@ -1527,6 +1534,7 @@ function subscribeRealtime(){
   const H=[
     ["direct_messages",null,p=>{
       const n=p.new,o=p.old;
+      if(p.eventType==="INSERT"&&n.receiver_id===me.id&&!blocked.has(n.sender_id)&&!(chatUser?.id===n.sender_id&&!document.hidden)) incomingMsg(n);
       if(p.eventType==="DELETE") mq1(o?.id)?.remove();
       else if(chatUser&&n&&[n.sender_id,n.receiver_id].includes(chatUser.id)&&[n.sender_id,n.receiver_id].includes(me.id)){
         if(p.eventType==="INSERT"){ addMsg(n); if(n.receiver_id===me.id) markRead(); }
@@ -1561,9 +1569,9 @@ function subscribeRealtime(){
         }
       },4000);
     }],
-    ["notifications","user_id=eq."+me.id,()=>{
+    ["notifications","user_id=eq."+me.id,p=>{
       refreshNotifBadge();
-      if(active("notifs")) loadNotifs(); else toast("🔔 Новое уведомление");
+      if(active("notifs")) loadNotifs(); else incomingNotif(p.new);
     }]
   ];
   let c=db.channel("social-"+me.id);
@@ -1589,7 +1597,7 @@ const MSG={}, mq1=id=>document.querySelector(`[data-mid="${id}"]`);
 function msgRow(m){
   MSG[m.id]=m; const own=m.sender_id===me.id;
   const row=document.createElement("div"); row.className="message-row"+(own?" mine":""); row.dataset.mid=m.id;
-  row.innerHTML=`<div class="message">${m.image_url?`<img class="message-photo" src="${esc(m.image_url)}" alt="Фото" onclick="openLightbox(this.src)">`:""}${m.content?`<div>${rich(m.content)}</div>`:""}<div class="message-time">${fmtT(m.created_at)}${m.edited_at?" · изм.":""}${own?`<span class="tick">${m.pending?"…":m.read_at?"✓✓":"✓"}</span>`:""}${own&&!m.pending?`<span class="msg-act">${m.content?`<b onclick="editMsg('${m.id}')">✎</b>`:""}<b onclick="deleteMsg('${m.id}')">🗑</b></span>`:""}</div></div>`;
+  row.innerHTML=`<div class="message">${m.image_url?`<img class="message-photo" src="${esc(m.image_url)}" alt="Фото" onclick="openLightbox(this.src)">`:""}${m.content?`<div>${rich(m.content)}</div>`:""}<div class="message-time">${fmtT(m.created_at)}${m.edited_at?" · изм.":""}${own?`<span class="tick">${m.pending?"…":m.read_at?"✓✓":"✓"}</span>`:""}</div></div>`;
   return row;
 }
 function addMsg(m){
@@ -1614,9 +1622,14 @@ async function deleteMsg(id){
 /* password reset */
 async function forgot(){
   const email=$("loginEmail").value.trim();
-  if(!email) return alert("Введите email выше, затем нажмите «Забыли пароль?»");
-  const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
-  alert(error?error.message:"Письмо для сброса пароля отправлено на "+email);
+  if(!email) return alert("Введите email, затем нажмите «Забыли пароль?»");
+  const {error}=await db.auth.resetPasswordForEmail(email); if(error) return alert(error.message);
+  codeSheet("Сброс пароля","Код отправлен на "+email,async code=>{
+    const np=$("otpNew").value; if(np.length<6) throw new Error("Пароль минимум 6 символов");
+    const {error:e}=await db.auth.verifyOtp({email,token:code,type:"recovery"}); if(e) throw e;
+    const {error:e2}=await db.auth.updateUser({password:np}); if(e2) throw e2;
+    closeSheet(); toast("Пароль изменён");
+  },`<input id="otpNew" class="input" type="password" placeholder="Новый пароль">`);
 }
 function newPassSheet(){
   openSheet("Новый пароль");
@@ -1687,6 +1700,67 @@ async function enablePush(){
 let sw0=null;
 document.addEventListener("touchstart",e=>{ const h=e.target.closest(".profile-edit-header,.comments-header,.full-header"); sw0=h?{y:e.touches[0].clientY,h}:null; },{passive:true});
 document.addEventListener("touchend",e=>{ if(sw0&&e.changedTouches[0].clientY-sw0.y>70) sw0.h.querySelector(".icon-btn")?.click(); sw0=null; });
+
+/* ---------- v3 ---------- */
+const IC_C='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+function codeSheet(title,text,fn,extra=""){
+  openSheet(title);
+  $("sheetBody").innerHTML=`<p class="edit-limit" style="margin:0 0 10px">${esc(text)}</p><input id="otpIn" class="input" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Код из письма">${extra}<button class="primary" style="width:100%" id="otpBtn">Подтвердить</button>`;
+  $("otpBtn").onclick=async()=>{
+    const code=$("otpIn").value.trim(); if(!code) return toast("Введите код");
+    const b=$("otpBtn"); b.disabled=true;
+    try{ await fn(code); }catch(e){ toast(e.message); }
+    finally{ b.disabled=false; }
+  };
+}
+/* sound + system notifications */
+let actx=null;
+addEventListener("pointerdown",()=>{ try{ actx=actx||new AudioContext(); actx.resume(); }catch(e){} },{once:true});
+addEventListener("click",()=>{ if(me&&"Notification" in window&&Notification.permission==="default") Notification.requestPermission(); },{once:true});
+function ding(){
+  try{ actx=actx||new AudioContext(); const o=actx.createOscillator(),g=actx.createGain(),t=actx.currentTime;
+    o.connect(g); g.connect(actx.destination); o.frequency.setValueAtTime(880,t); o.frequency.setValueAtTime(1175,t+.12);
+    g.gain.setValueAtTime(.25,t); g.gain.exponentialRampToValueAtTime(.001,t+.45); o.start(t); o.stop(t+.45); }catch(e){}
+}
+async function sysNotify(title,body){
+  ding();
+  if("Notification" in window&&Notification.permission==="granted"&&document.hidden){
+    try{ const r=await navigator.serviceWorker.ready; r.showNotification(title,{body,icon:"icon-192.png",badge:"icon-192.png",tag:"mb",renotify:true}); }catch(e){}
+  }else if(!document.hidden) toast(title+": "+body);
+}
+async function incomingMsg(n){
+  const {data:u}=await db.from("profiles").select("full_name,username").eq("id",n.sender_id).maybeSingle();
+  sysNotify(nameOf(u),n.content||"📷 Фото");
+}
+const NT={friend_request:"отправил(а) вам заявку в друзья",like:"оценил(а) вашу публикацию",comment:"прокомментировал(а) вашу публикацию",reply:"ответил(а) на ваш комментарий",comment_like:"оценил(а) ваш комментарий"};
+async function incomingNotif(n){
+  const {data:u}=await db.from("profiles").select("full_name,username").eq("id",n.actor_id).maybeSingle();
+  sysNotify(nameOf(u),NT[n.type]||"Новое уведомление");
+}
+async function enableNotifs(){
+  if(!("Notification" in window)) return toast("Браузер не поддерживает уведомления");
+  const r=await Notification.requestPermission();
+  if(r!=="granted") return toast("Разрешите уведомления в настройках браузера");
+  ding(); toast("Уведомления включены");
+  if(VAPID_PUBLIC) enablePush();
+}
+/* Telegram-style message menu */
+function ctxClose(){ $("ctx")?.remove(); }
+function msgMenu(id,x,y){
+  ctxClose(); const m=MSG[id]; if(!m||String(id).startsWith("tmp")) return;
+  const own=m.sender_id===me.id, d=document.createElement("div"); d.id="ctx";
+  d.innerHTML=`${m.content?`<button onclick="copyMsg('${id}')">Копировать</button>`:""}${own&&m.content?`<button onclick="ctxClose();editMsg('${id}')">Изменить</button>`:""}${own?`<button class="danger" onclick="ctxClose();deleteMsg('${id}')">Удалить</button>`:""}`;
+  if(!d.children.length) return;
+  document.body.appendChild(d);
+  d.style.left=Math.max(8,Math.min(x,innerWidth-d.offsetWidth-8))+"px";
+  d.style.top=Math.max(8,Math.min(y,innerHeight-d.offsetHeight-8))+"px";
+}
+async function copyMsg(id){ ctxClose(); try{ await navigator.clipboard.writeText(MSG[id].content); toast("Скопировано"); }catch(e){ toast("Не удалось скопировать"); } }
+let lp=null;
+document.addEventListener("touchstart",e=>{ const r=e.target.closest(".message-row"); if(!r) return; const t=e.touches[0]; lp=setTimeout(()=>{ navigator.vibrate?.(15); msgMenu(r.dataset.mid,t.clientX,t.clientY); },450); },{passive:true});
+["touchend","touchmove","touchcancel"].forEach(ev=>document.addEventListener(ev,()=>clearTimeout(lp),{passive:true}));
+document.addEventListener("contextmenu",e=>{ const r=e.target.closest(".message-row"); if(r){ e.preventDefault(); msgMenu(r.dataset.mid,e.clientX,e.clientY); } });
+document.addEventListener("pointerdown",e=>{ if(!e.target.closest("#ctx")) ctxClose(); });
 
 /* ---------- MISC ---------- */
 $("editProfileModal").addEventListener("click",e=>{ if(e.target.id==="editProfileModal") closeEditProfile(); });
