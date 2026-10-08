@@ -278,6 +278,7 @@ body.in-chat .page.chat-page{padding:0}
   <div class="auth-box">
     <div class="auth-logo">MB</div>
     <div class="auth-sub">Социальная сеть</div>
+    <select class="select langSel" onchange="setLang(this.value)"><option value="ru">Русский</option><option value="tg">Тоҷикӣ</option><option value="en">English</option></select>
     <div class="tabs">
       <button id="loginTab" class="tab active" onclick="authTab('login')">Вход</button>
       <button id="registerTab" class="tab" onclick="authTab('register')">Регистрация</button>
@@ -299,6 +300,7 @@ body.in-chat .page.chat-page{padding:0}
 </div>
 
 <div id="app" class="app hidden">
+  <div id="offline" class="hidden" style="background:#e5383b;color:#fff;text-align:center;font-size:12px;padding:4px">Нет подключения</div>
   <header class="topbar">
     <div class="logo">MB</div>
     <div class="top-actions">
@@ -334,8 +336,16 @@ body.in-chat .page.chat-page{padding:0}
             <button class="primary" id="postBtn" onclick="createPost()">Опубликовать</button>
           </div>
         </div>
+        <div class="tabs" style="margin-bottom:14px"><button id="fmAll" class="tab active" onclick="setFeedMode('all')">Для вас</button><button id="fmFr" class="tab" onclick="setFeedMode('friends')">Друзья</button></div>
         <div id="feed"><div class="loading"></div><div class="loading"></div></div>
         <div id="feedEnd" style="height:1px"></div>
+      </div>
+
+      <div id="page-tag" class="page">
+        <div class="close-row"><button class="icon-btn" onclick="closeTag()">×</button></div>
+        <h1 class="page-title" id="tagTitle">#</h1>
+        <p class="page-sub">Публикации по тегу</p>
+        <div id="tagPosts"></div>
       </div>
 
       <div id="page-people" class="page">
@@ -513,6 +523,7 @@ body.in-chat .page.chat-page{padding:0}
     <h2>Настройки</h2>
   </div>
   <div class="full-body">
+    <div class="settings-item"><div class="settings-title">Язык</div><select class="select langSel" style="margin:10px 0 0" onchange="setLang(this.value)"><option value="ru">Русский</option><option value="tg">Тоҷикӣ</option><option value="en">English</option></select></div>
     <div class="settings-item">
       <div class="settings-title">Тема</div>
       <div class="settings-desc">Выбери оформление MB.</div>
@@ -525,6 +536,7 @@ body.in-chat .page.chat-page{padding:0}
     <div class="settings-item">
       <label class="sw"><span>Скрыть статус «в сети»</span><input id="sHide" type="checkbox" onchange="setFlag('hide_online',this.checked)"></label>
       <label class="sw"><span>Закрытый профиль</span><input id="sPriv" type="checkbox" onchange="setFlag('is_private',this.checked)"></label>
+      <div class="sw"><span>Кто может писать мне</span><select id="sDM" class="select" style="width:auto;margin:0" onchange="setFlag('dm_privacy',this.value)"><option value="everyone">Все</option><option value="friends">Друзья</option><option value="nobody">Никто</option></select></div>
     </div>
     <div class="settings-item"><div style="display:grid;gap:8px">
       <button class="outline" onclick="openSaved()">Сохранённые посты</button>
@@ -535,7 +547,9 @@ body.in-chat .page.chat-page{padding:0}
     </div></div>
     <div class="settings-item">
       <div style="display:grid;gap:8px">
-        <button class="outline" onclick="openBlocked()">Заблокированные пользователи</button>
+        <button class="outline" onclick="openBlocked()">Заблокированные и скрытые</button>
+        <button class="outline" onclick="accountSheet('email')">Сменить email</button>
+        <button class="outline" onclick="accountSheet('password')">Сменить пароль</button>
         <button class="primary" onclick="logout()">Выйти из аккаунта</button>
         <button class="outline danger" onclick="deleteAccount()">Удалить аккаунт</button>
       </div>
@@ -581,10 +595,63 @@ const esc = v => v==null ? "" : String(v).replace(/&/g,"&amp;").replace(/</g,"&l
 const nameOf = p => p?.full_name || p?.username || "Пользователь";
 const avHtml = p => p?.avatar_url ? `<img src="${esc(p.avatar_url)}" alt="">` : esc(nameOf(p).charAt(0).toUpperCase());
 const setAvatar = (el,p) => { if(el&&p) el.innerHTML = avHtml(p); };
-const fmtDT = d => new Date(d).toLocaleString("ru-RU",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
-const fmtT = d => new Date(d).toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+const fmtDT = d => new Date(d).toLocaleString(LOC,{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+const fmtT = d => new Date(d).toLocaleTimeString(LOC,{hour:"2-digit",minute:"2-digit"});
 const genderText = g => ({male:"Мужчина",female:"Женщина",other:"Другое"})[g] || "Не указан";
 const FSEL = `*,sender:profiles!friendships_sender_id_fkey(id,username,full_name,avatar_url,last_seen,hide_online,is_verified),receiver:profiles!friendships_receiver_id_fkey(id,username,full_name,avatar_url,last_seen,hide_online,is_verified)`;
+
+/* ---------- I18N ---------- */
+const LANG=localStorage.getItem("mb-lang")||"ru", LOC={ru:"ru-RU",tg:"tg-TJ",en:"en-US"}[LANG]||"ru-RU";
+const I18N=[
+["Лента","Лента","Feed"],["Для вас","Барои шумо","For you"],["Друзья","Дӯстон","Friends"],["Поиск","Ҷустуҷӯ","Search"],["Чаты","Чатҳо","Chats"],["Профиль","Профил","Profile"],
+["Вход","Вуруд","Log in"],["Регистрация","Сабти ном","Sign up"],["Социальная сеть","Шабакаи иҷтимоӣ","Social network"],["Пароль","Парол","Password"],["Войти","Ворид шудан","Log in"],["Забыли пароль?","Паролро фаромӯш кардед?","Forgot password?"],["Имя","Ном","Name"],["Создать аккаунт","Эҷоди ҳисоб","Create account"],
+["Публикации пользователей","Нашрҳои корбарон","Posts from users"],["Что нового?","Чӣ нав?","What's new?"],["Фото","Акс","Photo"],["Опубликовать","Нашр кардан","Post"],["Пока нет публикаций.","Ҳоло нашрҳо нест.","No posts yet."],["Пока нет публикаций от друзей.","Ҳоло нашрҳои дӯстон нест.","No posts from friends yet."],
+["Публикации по тегу","Нашрҳо аз рӯи тег","Posts with this tag"],["Нет публикаций с этим тегом.","Нашрҳо бо ин тег нест.","No posts with this tag."],
+["Найти пользователей","Ёфтани корбарон","Find people"],["Имя или username","Ном ё username","Name or username"],["Любой возраст","Ҳама синну сол","Any age"],["Любой пол","Ҳама ҷинс","Any gender"],["Мужчина","Мард","Male"],["Женщина","Зан","Female"],["Другое","Дигар","Other"],["Найти","Ёфтан","Search"],["Никого не найдено.","Касе ёфт нашуд.","Nobody found."],["Заявка","Дархост","Request"],
+["Твои переписки","Мукотибаҳои шумо","Your conversations"],["Добавь друзей, чтобы начать переписку.","Барои оғози мукотиба дӯст илова кунед.","Add friends to start chatting."],["Нет сообщений","Паём нест","No messages"],["Не в сети","Дар шабака нест","Offline"],["В сети","Дар шабака","Online"],["Сообщение...","Паём...","Message..."],["Начните разговор.","Сӯҳбатро оғоз кунед.","Start a conversation."],["печатает...","менависад...","typing..."],["Чат","Чат","Chat"],
+["Был(а) недавно","Ба қарибӣ буд","Last seen recently"],["Не был в сети","Дар шабака набуд","Never online"],["Был только что","Ҳозир буд","Just now"],["Был в сети","Дар шабака буд","Last seen"],["мин. назад","дақ. пеш","min ago"],["ч. назад","соат пеш","h ago"],
+["Заявки и друзья","Дархостҳо ва дӯстон","Requests and friends"],["Заявки","Дархостҳо","Requests"],["Мои друзья","Дӯстони ман","My friends"],["Нет новых заявок.","Дархостҳои нав нест.","No new requests."],["Пока нет друзей.","Ҳоло дӯстон нест.","No friends yet."],["Принять","Қабул кардан","Accept"],
+["Редактировать профиль","Таҳрири профил","Edit profile"],["Поделиться профилем","Мубодилаи профил","Share profile"],["Год рождения","Соли таваллуд","Birth year"],["Пол","Ҷинс","Gender"],["Не указан","Нишон дода нашудааст","Not specified"],["Мои публикации","Нашрҳои ман","My posts"],["Публикации","Нашрҳо","Posts"],["постов","нашр","posts"],["друзей","дӯст","friends"],
+[tr("Пользователь пока ничего не написал о себе."),"Корбар ҳоло дар бораи худ чизе нанавиштааст.","This user hasn't written anything about themselves yet."],["У тебя пока нет публикаций.","Шумо ҳоло нашр надоред.","You have no posts yet."],["У пользователя пока нет публикаций.","Корбар ҳоло нашр надорад.","This user has no posts yet."],
+["Уведомления","Огоҳиномаҳо","Notifications"],["Заявки, лайки и комментарии","Дархостҳо, лайкҳо ва шарҳҳо","Requests, likes and comments"],["Пока нет уведомлений.","Ҳоло огоҳиномае нест.","No notifications yet."],["Новое уведомление","Огоҳиномаи нав","New notification"],
+["хочет добавить вас в друзья","мехоҳад шуморо ба дӯстон илова кунад","wants to add you as a friend"],["отправил(а) вам заявку в друзья","ба шумо дархости дӯстӣ фиристод","sent you a friend request"],["оценил(а) вашу публикацию","нашри шуморо баҳо дод","liked your post"],["прокомментировал(а) вашу публикацию","ба нашри шумо шарҳ навишт","commented on your post"],["ответил(а) на ваш комментарий","ба шарҳи шумо ҷавоб дод","replied to your comment"],["оценил(а) ваш комментарий","шарҳи шуморо баҳо дод","liked your comment"],
+["Изменить профиль","Таҳрири профил","Edit profile"],["Изменить фото","Иваз кардани акс","Change photo"],["Обложка профиля","Муқоваи профил","Profile cover"],["О себе","Дар бораи худ","About me"],["Сохранить","Захира кардан","Save"],["Изменений за 7 дней","Тағйирот дар 7 рӯз","Changes in 7 days"],
+["Настройки","Танзимот","Settings"],["Язык","Забон","Language"],["Тема","Мавзӯъ","Theme"],["Выбери оформление MB.","Намуди MB-ро интихоб кунед.","Choose how MB looks."],["Чёрная","Сиёҳ","Dark"],["Белая","Сафед","Light"],["Как в системе","Мувофиқи система","System"],
+["Скрыть статус «в сети»","Пинҳон кардани ҳолати «дар шабака»","Hide “online” status"],["Закрытый профиль","Профили пӯшида","Private profile"],["Кто может писать мне","Кӣ метавонад ба ман нависад","Who can message me"],["Все","Ҳама","Everyone"],["Никто","Ҳеҷ кас","Nobody"],
+["Сохранённые посты","Нашрҳои захирашуда","Saved posts"],["Ссылка на мой профиль","Истиноди профили ман","My profile link"],["Уведомления и звук","Огоҳинома ва садо","Notifications and sound"],["Модерация жалоб","Баррасии шикоятҳо","Moderation"],["Заблокированные и скрытые","Масдудшудагон ва пинҳонҳо","Blocked and hidden"],["Заблокированные","Масдудшудагон","Blocked"],["Скрытые","Пинҳонкардашудагон","Hidden"],["Выйти из аккаунта","Баромадан аз ҳисоб","Log out"],["Удалить аккаунт","Нест кардани ҳисоб","Delete account"],
+["Сменить email","Иваз кардани email","Change email"],["Сменить пароль","Иваз кардани парол","Change password"],["Новый email","Email-и нав","New email"],["Текущий пароль","Пароли ҷорӣ","Current password"],["Новый пароль (мин. 6 символов)","Пароли нав (ҳадди ақал 6 аломат)","New password (min. 6 characters)"],["Повторите новый пароль","Пароли навро такрор кунед","Repeat new password"],
+["Неверный текущий пароль","Пароли ҷорӣ нодуруст аст","Current password is incorrect"],["Пароли не совпадают","Паролҳо мувофиқ нестанд","Passwords don't match"],["Минимум 6 символов","Ҳадди ақал 6 аломат","At least 6 characters"],["Пароль изменён","Парол иваз шуд","Password changed"],["Проверьте почту, чтобы подтвердить новый email","Барои тасдиқи email-и нав почтаро санҷед","Check your email to confirm the new address"],
+["Комментарии","Шарҳҳо","Comments"],["Написать комментарий...","Шарҳ нависед...","Write a comment..."],["Отправить","Фиристодан","Send"],["Пока нет комментариев.","Ҳоло шарҳҳо нест.","No comments yet."],["Ответить","Ҷавоб додан","Reply"],["Удалить","Нест кардан","Delete"],["Изменить","Таҳрир","Edit"],["Отмена","Бекор кардан","Cancel"],["Ответ для","Ҷавоб ба","Reply to"],
+["Понравилось","Писанд омад","Likes"],["Пока никто не оценил.","Ҳоло касе баҳо надодааст.","No likes yet."],["Сохранённые","Захирашудагон","Saved"],["Пока ничего не сохранено.","Ҳоло чизе захира нашудааст.","Nothing saved yet."],["Пусто","Холӣ","Empty"],["Список пуст.","Рӯйхат холӣ аст.","The list is empty."],["Кто оценил","Кӣ баҳо дод","Who liked"],["Пожаловаться","Шикоят кардан","Report"],
+["Разблокировать","Кушодан","Unblock"],["Заблокировать","Масдуд кардан","Block"],["Пользователь заблокирован.","Корбар масдуд шудааст.","This user is blocked."],["Добавить в друзья","Ба дӯстон илова кардан","Add friend"],["Заявка отправлена","Дархост фиристода шуд","Request sent"],["Принять заявку","Қабули дархост","Accept request"],["Написать","Навиштан","Message"],["Удалить из друзей","Аз дӯстон баровардан","Remove friend"],["Скрыть публикации","Пинҳон кардани нашрҳо","Hide posts"],["Показать публикации","Нишон додани нашрҳо","Show posts"],["Показать","Нишон додан","Show"],
+["Сохранено","Захира шуд","Saved"],["Профиль сохранён","Профил захира шуд","Profile saved"],["Жалоба отправлена. Спасибо!","Шикоят фиристода шуд. Ташаккур!","Report sent. Thank you!"],["Публикация изменена","Нашр таҳрир шуд","Post updated"],["Ссылка скопирована","Истинод нусха шуд","Link copied"],["Пользователь заблокирован","Корбар масдуд шуд","User blocked"],["Пользователь разблокирован","Корбар кушода шуд","User unblocked"],["Публикации пользователя скрыты","Нашрҳои корбар пинҳон шуданд","User's posts hidden"],["Публикации снова видны","Нашрҳо боз намоёнанд","Posts are visible again"],["Скопировано","Нусха шуд","Copied"],["Копировать","Нусха гирифтан","Copy"],
+["Максимум 4 фото","Ҳадди аксар 4 акс","Maximum 4 photos"],["Добавьте текст или фотографию","Матн ё акс илова кунед","Add text or a photo"],["Введите email и пароль","Email ва паролро ворид кунед","Enter email and password"],["Заполните все поля","Ҳамаи майдонҳоро пур кунед","Fill in all fields"],["Пользователь не найден","Корбар ёфт нашуд","User not found"],["Уведомления включены","Огоҳиномаҳо фаъол шуданд","Notifications enabled"],
+["Подтвердите email","Email-ро тасдиқ кунед","Confirm your email"],["Код из письма","Рамз аз мактуб","Code from the email"],["Подтвердить","Тасдиқ кардан","Confirm"],["Введите код","Рамзро ворид кунед","Enter the code"],["Установить приложение","Насб кардани барнома","Install app"],["Начать","Оғоз кардан","Start"],["Добро пожаловать в MB","Хуш омадед ба MB","Welcome to MB"],
+["Нет подключения","Пайвастшавӣ нест","No connection"],["Нет подключения. Показаны сохранённые сообщения.","Пайвастшавӣ нест. Паёмҳои захирашуда нишон дода шудаанд.","No connection. Showing saved messages."],["Ошибка отправки","Хатои фиристодан","Failed to send"],["Пользователь ограничил личные сообщения","Корбар паёмҳои шахсиро маҳдуд кардааст","This user has restricted private messages"],
+["Выйти из аккаунта?","Аз ҳисоб мебароед?","Log out?"],["Удалить эту публикацию?","Ин нашрро нест мекунед?","Delete this post?"],["Удалить комментарий?","Шарҳро нест мекунед?","Delete this comment?"],["Удалить сообщение?","Паёмро нест мекунед?","Delete this message?"],["Удалить этого пользователя из друзей?","Ин корбарро аз дӯстон мебароред?","Remove this user from friends?"],["Заблокировать пользователя? Вы не увидите его публикации, а дружба будет удалена.","Корбарро масдуд мекунед? Шумо нашрҳои ӯро намебинед ва дӯстӣ нест мешавад.","Block this user? You won't see their posts and the friendship will be removed."],["Причина жалобы:","Сабаби шикоят:","Reason for report:"],["Изменить сообщение:","Таҳрири паём:","Edit message:"]
+];
+const TR={}; if(LANG!=="ru") I18N.forEach(r=>TR[r[0]]=r[LANG==="tg"?1:2]);
+const tr=s=>TR[s]||s;
+const _cf=window.confirm.bind(window), _pr=window.prompt.bind(window);
+window.confirm=m=>_cf(tr(m)); window.prompt=(m,d)=>_pr(tr(m),d);
+const I18N_SKIP=".post-content,.comment-text,.message,.bio,.chat-last";
+function trNode(n){
+  if(n.nodeType===3){
+    const p=n.parentNode; if(!p||/^(SCRIPT|STYLE|TEXTAREA)$/.test(p.nodeName)||(p.closest&&p.closest(I18N_SKIP))) return;
+    const t=n.data.trim(); if(TR[t]) n.data=n.data.replace(t,TR[t]);
+  }else if(n.nodeType===1){
+    if(/^(SCRIPT|STYLE)$/.test(n.nodeName)||n.closest(I18N_SKIP)) return;
+    ["placeholder","title"].forEach(a=>{ const v=n.getAttribute(a); if(v&&TR[v]) n.setAttribute(a,TR[v]); });
+    n.childNodes.forEach(trNode);
+  }
+}
+function setLang(l){ localStorage.setItem("mb-lang",l); location.reload(); }
+document.querySelectorAll(".langSel").forEach(x=>x.value=LANG);
+if(LANG!=="ru"){
+  document.documentElement.lang=LANG;
+  trNode(document.body);
+  new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(trNode))).observe(document.body,{childList:true,subtree:true});
+}
 
 /* ---------- THEME / TOAST / OVERLAYS ---------- */
 function toast(msg){
@@ -688,6 +755,7 @@ async function logout(){
   if(!confirm("Выйти из аккаунта?")) return;
   if(channel){ await db.removeChannel(channel); channel=null; }
   clearInterval(presenceT);
+  Object.keys(localStorage).filter(k=>/^mb-(msgs|chats)-/.test(k)).forEach(k=>localStorage.removeItem(k));
   closeSettings(); closeComments();
   await db.auth.signOut();
 }
@@ -699,22 +767,22 @@ async function updatePresence(){
 const isOnline = p => p?.last_seen && !p.hide_online && (Date.now()-new Date(p.last_seen).getTime()) < 90000;
 const statusHtml = p => `<div class="online-status"><span class="status-dot ${isOnline(p)?"":"status-offline"}"></span>${isOnline(p)?"В сети":"Не в сети"}</div>`;
 function lastSeenText(p){
-  if(p?.hide_online) return "Был(а) недавно";
-  if(!p?.last_seen) return "Не был в сети";
-  if(isOnline(p)) return "В сети";
-  const d=new Date(p.last_seen), m=Math.floor((Date.now()-d.getTime())/60000);
-  if(m<1) return "Был только что";
-  if(m<60) return `Был в сети ${m} мин. назад`;
+  if(p?.hide_online) return tr("Был(а) недавно");
+  if(!p?.last_seen) return tr("Не был в сети");
+  if(isOnline(p)) return tr("В сети");
+  const d=new Date(p.last_seen), m=Math.floor((Date.now()-d.getTime())/60000), s=tr("Был в сети");
+  if(m<1) return tr("Был только что");
+  if(m<60) return `${s} ${m} ${tr("мин. назад")}`;
   const h=Math.floor(m/60);
-  if(h<24) return `Был в сети ${h} ч. назад`;
-  return `Был в сети ${d.toLocaleDateString("ru-RU",{day:"numeric",month:"short"})} в ${fmtT(d)}`;
+  if(h<24) return `${s} ${h} ${tr("ч. назад")}`;
+  return `${s} ${d.toLocaleDateString(LOC,{day:"numeric",month:"short"})}${LANG==="ru"?" в ":", "}${fmtT(d)}`;
 }
 
 /* ---------- NAVIGATION ---------- */
 function setPage(n){
   document.body.classList.toggle("in-chat",n==="chat");
   document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active", p.id==="page-"+n));
-  if(n!=="user-profile" && n!=="chat")
+  if(n!=="user-profile" && n!=="chat" && n!=="tag")
     document.querySelectorAll("[data-p]").forEach(b=>b.classList.toggle("active", b.dataset.p===n));
 }
 function showPage(n){
@@ -746,7 +814,7 @@ function renderMyProfile(){
   if(!myProfile) return;
   $("profileName").innerHTML = esc(nameOf(myProfile))+vb(myProfile); setCover($("myCover"),myProfile.cover_url);
   $("profileUsername").textContent = "@"+myProfile.username;
-  $("profileBio").textContent = myProfile.bio || "Пользователь пока ничего не написал о себе.";
+  $("profileBio").textContent = myProfile.bio || tr("Пользователь пока ничего не написал о себе.");
   $("profileBirth").textContent = myProfile.birth_year || "Не указан";
   $("profileGender").textContent = genderText(myProfile.gender);
   setAvatar($("profileAvatar"),myProfile);
@@ -786,8 +854,8 @@ function updateChangeHints(){
   if(!myProfile) return;
   const n = windowExpired(myProfile.name_change_window_start) ? 0 : (myProfile.name_changes_count||0);
   const u = windowExpired(myProfile.username_change_window_start) ? 0 : (myProfile.username_changes_count||0);
-  $("nameChangeHint").textContent = `Изменений за 7 дней: ${n}/2`;
-  $("usernameChangeHint").textContent = `Изменений за 7 дней: ${u}/2`;
+  $("nameChangeHint").textContent = `${tr("Изменений за 7 дней")}: ${n}/2`;
+  $("usernameChangeHint").textContent = `${tr("Изменений за 7 дней")}: ${u}/2`;
 }
 
 function previewAvatar(e){
@@ -859,7 +927,7 @@ async function saveProfile(){
 }
 
 /* ---------- POSTS ---------- */
-let blocked=new Set(), selPhotos=[], feedOffset=0, feedDone=false, feedBusy=false, feedRetry=false;
+let blocked=new Set(), hiddenSet=new Set(), feedMode="all", feedIds=null, selPhotos=[], feedOffset=0, feedDone=false, feedBusy=false, feedRetry=false;
 const PAGE=15;
 const POST_SEL=`*,profiles(id,username,full_name,avatar_url,is_verified)`;
 async function withProfiles(build){
@@ -877,6 +945,8 @@ async function withProfiles(build){
 async function loadBlocked(){
   const {data}=await db.from("blocks").select("blocked_id").eq("blocker_id",me.id);
   blocked=new Set((data||[]).map(b=>b.blocked_id));
+  const {data:h}=await db.from("hidden_users").select("hidden_id").eq("user_id",me.id);
+  hiddenSet=new Set((h||[]).map(x=>x.hidden_id));
 }
 
 function previewPhoto(e){
@@ -969,14 +1039,19 @@ async function loadFeed(reset=true){
   if(feedBusy){ if(reset) feedRetry=true; return; }
   feedBusy=true;
   if(reset){ feedOffset=0; feedDone=false; box.innerHTML=`<div class="loading"></div><div class="loading"></div>`; }
-  const {data,error}=await withProfiles(q=>db.from("posts").select(q).order("created_at",{ascending:false}).range(feedOffset,feedOffset+PAGE-1));
+  let ids=null;
+  if(feedMode==="friends"){
+    if(reset||!feedIds){ try{ feedIds=[me.id,...(await myFriends()).map(u=>u.id)]; }catch(e){ feedIds=[me.id]; } }
+    ids=feedIds;
+  }
+  const {data,error}=await withProfiles(q=>{ let b=db.from("posts").select(q); if(ids) b=b.in("user_id",ids); return b.order("created_at",{ascending:false}).range(feedOffset,feedOffset+PAGE-1); });
   if(error){
     feedBusy=false;
     if(reset) box.innerHTML=`<div class="empty">Ошибка загрузки публикаций.<br><br>${esc(error.message)}</div>`;
     return;
   }
   feedOffset+=data.length; feedDone=data.length<PAGE;
-  await renderPosts(box,data,"Пока нет публикаций.",!reset);
+  await renderPosts(box,data.filter(p=>!hiddenSet.has(p.user_id)),feedMode==="friends"?"Пока нет публикаций от друзей.":"Пока нет публикаций.",!reset);
   feedBusy=false;
   if(feedRetry){ feedRetry=false; return loadFeed(true); }
   checkFeedMore();
@@ -1045,12 +1120,19 @@ async function unblockUser(uid){
   loadFeed(); loadPeople();
 }
 async function openBlocked(){
-  openSheet("Заблокированные");
-  const body=$("sheetBody"), ids=[...blocked];
+  openSheet("Заблокированные и скрытые");
+  const body=$("sheetBody"), ids=[...new Set([...blocked,...hiddenSet])];
   if(!ids.length){ body.innerHTML=`<div class="empty">Список пуст.</div>`; return; }
   const {data}=await db.from("profiles").select("*").in("id",ids);
+  const U=Object.fromEntries((data||[]).map(u=>[u.id,u]));
   body.innerHTML="";
-  (data||[]).forEach(u=>body.appendChild(userRow(u,`<button class="outline small" onclick="unblockUser('${u.id}');closeSheet()">Разблокировать</button>`)));
+  const sec=(title,set,btn)=>{
+    if(!set.size) return;
+    const h=document.createElement("h3"); h.style.margin="6px 0 10px"; h.textContent=title; body.appendChild(h);
+    [...set].forEach(id=>U[id]&&body.appendChild(userRow(U[id],btn(id))));
+  };
+  sec("Заблокированные",blocked,id=>`<button class="outline small" onclick="unblockUser('${id}');closeSheet()">Разблокировать</button>`);
+  sec("Скрытые",hiddenSet,id=>`<button class="outline small" onclick="unhideUser('${id}');closeSheet()">Показать</button>`);
 }
 
 /* ---------- LIKES ---------- */
@@ -1338,7 +1420,7 @@ async function renderOtherProfile(u){
   if(!u) return;
   $("otherProfileName").innerHTML=esc(nameOf(u))+vb(u)+(u.is_private?" 🔒":""); setCover($("otherCover"),u.cover_url);
   $("otherProfileUsername").textContent="@"+u.username;
-  $("otherProfileBio").textContent=u.bio||"Пользователь пока ничего не написал о себе.";
+  $("otherProfileBio").textContent=u.bio||tr("Пользователь пока ничего не написал о себе.");
   $("otherBirth").textContent=u.birth_year||"Не указан";
   $("otherGender").textContent=genderText(u.gender);
   $("otherProfileStatus").innerHTML=statusHtml(u);
@@ -1361,8 +1443,10 @@ async function renderOtherProfile(u){
     box.innerHTML = f.sender_id===me.id
       ? `<button class="outline" disabled>Заявка отправлена</button>`
       : `<button class="primary" onclick="acceptFriend('${f.id}')">Принять заявку</button>`;
-  else box.innerHTML=`<button class="outline" onclick="openChat('${u.id}')">Написать</button><button class="outline" onclick="removeFriend('${u.id}')">Удалить из друзей</button>`;
-  box.insertAdjacentHTML("beforeend",`<button class="outline" onclick="blockUser('${u.id}')">Заблокировать</button>`);
+  else box.innerHTML=`<button class="outline" onclick="removeFriend('${u.id}')">Удалить из друзей</button>`;
+  const dmp=u.dm_privacy||"everyone";
+  if(f?.status==="accepted"?dmp!=="nobody":dmp==="everyone") box.insertAdjacentHTML("afterbegin",`<button class="outline" onclick="openChat('${u.id}')">Написать</button>`);
+  box.insertAdjacentHTML("beforeend",(hiddenSet.has(u.id)?`<button class="outline" onclick="unhideUser('${u.id}')">Показать публикации</button>`:`<button class="outline" onclick="hideUser('${u.id}')">Скрыть публикации</button>`)+`<button class="outline" onclick="blockUser('${u.id}')">Заблокировать</button>`);
 
   if(u.is_private&&f?.status!=="accepted"){ $("otherProfileBio").textContent="🔒 Закрытый профиль"; $("otherProfilePosts").innerHTML=`<div class="empty">Закрытый профиль. Добавьте в друзья, чтобы видеть публикации.</div>`; return; }
   loadPostsInto("otherProfilePosts",u.id,"У пользователя пока нет публикаций.");
@@ -1388,20 +1472,9 @@ async function refreshUnread(){
   setBadge("chats",Object.values(unread).reduce((a,b)=>a+b,0));
 }
 
-async function loadChats(){
-  const box=$("chatList");
-  if(!box||!me) return;
-  let friends;
-  try{ friends=await myFriends(); }
-  catch(e){ box.innerHTML=`<div class="empty">${esc(e.message)}</div>`; return; }
-  if(!friends.length){ box.innerHTML=`<div class="empty">Добавь друзей, чтобы начать переписку.</div>`; return; }
-  const items=await Promise.all(friends.map(async u=>{
-    const {data:last}=await db.from("direct_messages").select("*")
-      .or(`and(sender_id.eq.${me.id},receiver_id.eq.${u.id}),and(sender_id.eq.${u.id},receiver_id.eq.${me.id})`)
-      .order("created_at",{ascending:false}).limit(1).maybeSingle();
-    return {u,last};
-  }));
+function renderChatItems(box,items){
   box.innerHTML="";
+  if(!items.length){ box.innerHTML=`<div class="empty">Добавь друзей, чтобы начать переписку.</div>`; return; }
   items.forEach(({u,last})=>{
     const div=document.createElement("div"); div.className="chat-item";
     div.innerHTML=`
@@ -1409,17 +1482,47 @@ async function loadChats(){
       <div class="chat-item-info">
         <div class="chat-item-name">${esc(nameOf(u))}</div>
         <div class="chat-user-status">${esc(lastSeenText(u))}</div>
-        <div class="chat-last">${esc(last?(last.content||(last.image_url?"Фото":"")):"Нет сообщений")}</div>
+        <div class="chat-last">${esc(last?(last.content||(last.image_url?tr("Фото"):"")):tr("Нет сообщений"))}</div>
       </div>
       ${unread[u.id]?`<span class="badge">${unread[u.id]}</span>`:""}`;
     div.onclick=()=>openChat(u.id);
     box.appendChild(div);
   });
 }
+async function loadChats(){
+  const box=$("chatList");
+  if(!box||!me) return;
+  const key="mb-chats-"+me.id;
+  const cached=()=>{ try{ return JSON.parse(localStorage.getItem(key)||"null"); }catch(e){ return null; } };
+  if(!navigator.onLine){ const c=cached(); if(c) return renderChatItems(box,c); }
+  let items;
+  try{
+    const friends=await myFriends(), byId=new Map(friends.map(u=>[u.id,u]));
+    const {data:dm,error:de}=await db.from("direct_messages").select("sender_id,receiver_id").or(`sender_id.eq.${me.id},receiver_id.eq.${me.id}`).order("created_at",{ascending:false}).limit(200);
+    if(de) throw de;
+    const extra=[...new Set((dm||[]).map(m=>m.sender_id===me.id?m.receiver_id:m.sender_id))].filter(id=>!byId.has(id)&&!blocked.has(id));
+    if(extra.length){ const {data:ps}=await db.from("profiles").select("*").in("id",extra); (ps||[]).forEach(u=>byId.set(u.id,u)); }
+    items=await Promise.all([...byId.values()].map(async u=>{
+      const {data:last}=await db.from("direct_messages").select("*")
+        .or(`and(sender_id.eq.${me.id},receiver_id.eq.${u.id}),and(sender_id.eq.${u.id},receiver_id.eq.${me.id})`)
+        .order("created_at",{ascending:false}).limit(1).maybeSingle();
+      return {u,last};
+    }));
+    items.sort((a,b)=>(b.last?.created_at||"").localeCompare(a.last?.created_at||""));
+    try{ localStorage.setItem(key,JSON.stringify(items)); }catch(e){}
+  }catch(e){
+    items=cached();
+    if(!items){ box.innerHTML=`<div class="empty">${esc(e.message)}</div>`; return; }
+  }
+  renderChatItems(box,items);
+}
 
 async function openChat(uid){
-  const {data:u,error}=await db.from("profiles").select("*").eq("id",uid).single();
-  if(error||!u) return toast(error?.message||"Пользователь не найден");
+  let {data:u,error}=await db.from("profiles").select("*").eq("id",uid).single();
+  if(error||!u){
+    try{ u=(JSON.parse(localStorage.getItem("mb-chats-"+me.id)||"[]").find(x=>x.u.id===uid)||{}).u; }catch(e){}
+    if(!u) return toast(error?.message||"Пользователь не найден");
+  }
   chatUser=u; viewUser=null;
   setPage("chat");
   $("chatName").textContent=nameOf(u);
@@ -1437,15 +1540,23 @@ async function markRead(){
 
 async function loadMessages(){
   if(!chatUser) return;
-  const box=$("messages"); box.innerHTML="";
-  const {data,error}=await db.from("direct_messages").select("*")
+  const box=$("messages"), key=`mb-msgs-${me.id}-${chatUser.id}`; box.innerHTML="";
+  let rows=null;
+  const {data,error}=navigator.onLine?await db.from("direct_messages").select("*")
     .or(`and(sender_id.eq.${me.id},receiver_id.eq.${chatUser.id}),and(sender_id.eq.${chatUser.id},receiver_id.eq.${me.id})`)
-    .order("created_at",{ascending:false}).limit(80);
-  if(error){ box.innerHTML=`<div class="empty">${esc(error.message)}</div>`; return; }
-  if(!data?.length){ box.innerHTML=`<div class="empty">Начните разговор.</div>`; return; }
-  data.reverse().forEach(m=>box.appendChild(msgRow(m)));
+    .order("created_at",{ascending:false}).limit(80):{error:{message:"offline"}};
+  if(error||!data){
+    try{ rows=JSON.parse(localStorage.getItem(key)||"null"); }catch(e){}
+    if(!rows){ box.innerHTML=`<div class="empty">${esc(error?.message||"")}</div>`; return; }
+    toast("Нет подключения. Показаны сохранённые сообщения.");
+  }else{
+    rows=data.slice().reverse();
+    try{ localStorage.setItem(key,JSON.stringify(rows)); }catch(e){}
+  }
+  if(!rows.length){ box.innerHTML=`<div class="empty">Начните разговор.</div>`; return; }
+  rows.forEach(m=>box.appendChild(msgRow(m)));
   box.scrollTop=box.scrollHeight;
-  if(data.some(m=>m.receiver_id===me.id&&!m.read_at)) markRead();
+  if(data&&data.some(m=>m.receiver_id===me.id&&!m.read_at)) markRead();
 }
 
 function previewChatPhoto(e){
@@ -1466,6 +1577,7 @@ async function sendMessage(){
   if(!chatUser) return;
   const input=$("messageInput"), content=input.value.trim(), file=selChatPhoto;
   if(!content && !file) return;
+  if(!navigator.onLine) return toast("Нет подключения");
   input.value=""; removeChatPhoto();
   const tmp="tmp"+Date.now();
   addMsg({id:tmp,sender_id:me.id,receiver_id:chatUser.id,content,image_url:file?URL.createObjectURL(file):null,created_at:new Date().toISOString(),pending:true});
@@ -1476,7 +1588,7 @@ async function sendMessage(){
     const old=mq1(tmp);
     if(mq1(data.id)) old?.remove(); else old?.replaceWith(msgRow(data));
     loadChats();
-  }catch(err){ mq1(tmp)?.remove(); input.value=content; toast("Ошибка отправки: "+err.message); }
+  }catch(err){ mq1(tmp)?.remove(); input.value=content; toast(/row-level|policy|permission/i.test(err.message)?tr("Пользователь ограничил личные сообщения"):tr("Ошибка отправки")+": "+err.message); }
 }
 
 /* typing */
@@ -1584,7 +1696,7 @@ function subscribeRealtime(){
 }
 
 /* ---------- NEW FEATURES ---------- */
-const rich=t=>esc(t).replace(/(^|\s)@([a-zA-Z0-9_.]{3,30})/g,'$1<span class="mention" onclick="openByUsername(\'$2\')">@$2</span>');
+const rich=t=>esc(t).replace(/(^|\s)@([a-zA-Z0-9_.]{3,30})/g,'$1<span class="mention" onclick="openByUsername(\'$2\')">@$2</span>').replace(/(^|\s)#([\p{L}\p{N}_]{1,50})/gu,(m,a,b)=>`${a}<span class="mention" onclick="openTag(decodeURIComponent('${encodeURIComponent(b)}'))">#${b}</span>`);
 const vb=p=>p?.is_verified?'<span class="vb" title="Подтверждён">✔</span>':"";
 const setCover=(el,u)=>{ if(!el) return; el.classList.toggle("hidden",!u); el.style.backgroundImage=u?`url("${u}")`:""; };
 let selCover=null, savedSet=new Set(), dip=null;
@@ -1654,7 +1766,7 @@ function welcome(){
 /* settings */
 function syncSettings(){
   if(!myProfile) return;
-  $("sHide").checked=!!myProfile.hide_online; $("sPriv").checked=!!myProfile.is_private;
+  $("sDM").value=myProfile.dm_privacy||"everyone"; $("sHide").checked=!!myProfile.hide_online; $("sPriv").checked=!!myProfile.is_private;
   $("sAdmin").classList.toggle("hidden",!myProfile.is_admin); $("sInstall").innerHTML=installHtml();
 }
 async function setFlag(col,v){
@@ -1735,7 +1847,7 @@ async function incomingMsg(n){
 const NT={friend_request:"отправил(а) вам заявку в друзья",like:"оценил(а) вашу публикацию",comment:"прокомментировал(а) вашу публикацию",reply:"ответил(а) на ваш комментарий",comment_like:"оценил(а) ваш комментарий"};
 async function incomingNotif(n){
   const {data:u}=await db.from("profiles").select("full_name,username").eq("id",n.actor_id).maybeSingle();
-  sysNotify(nameOf(u),NT[n.type]||"Новое уведомление");
+  sysNotify(nameOf(u),tr(NT[n.type]||"Новое уведомление"));
 }
 async function enableNotifs(){
   if(!("Notification" in window)) return toast("Браузер не поддерживает уведомления");
@@ -1778,6 +1890,68 @@ document.addEventListener("keydown",e=>{
 new IntersectionObserver(es=>{
   if(es[0].isIntersecting && !feedDone && !feedBusy && me && $("page-feed").classList.contains("active")) loadFeed(false);
 },{root:document.querySelector(".content"),rootMargin:"300px"}).observe($("feedEnd"));
+
+/* ---------- v4: feeds, tags, hidden users, account, offline ---------- */
+function setFeedMode(m){
+  feedMode=m; feedIds=null;
+  $("fmAll").classList.toggle("active",m==="all"); $("fmFr").classList.toggle("active",m==="friends");
+  loadFeed(true);
+}
+async function openTag(t){
+  closeComments(); closeSheet(); closeSettings();
+  const act=document.querySelector(".page.active");
+  if(act&&!["page-tag","page-chat","page-user-profile"].includes(act.id)) prevPage=act.id.replace("page-","");
+  viewUser=null; chatUser=null; setPage("tag");
+  $("tagTitle").textContent="#"+t;
+  const box=$("tagPosts"); box.innerHTML=`<div class="loading"></div><div class="loading"></div>`;
+  const {data,error}=await withProfiles(q=>db.from("posts").select(q).ilike("content","%#"+t+"%").order("created_at",{ascending:false}).limit(50));
+  if(error){ box.innerHTML=`<div class="empty">${esc(error.message)}</div>`; return; }
+  const re=new RegExp("(^|[^\\p{L}\\p{N}_])#"+t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?![\\p{L}\\p{N}_])","iu");
+  await renderPosts(box,data.filter(p=>re.test(p.content||"")&&!hiddenSet.has(p.user_id)),"Нет публикаций с этим тегом.",false);
+}
+function closeTag(){ showPage(prevPage||"feed"); }
+
+async function hideUser(uid){
+  const {error}=await db.from("hidden_users").insert({user_id:me.id,hidden_id:uid});
+  if(error) return toast(error.message);
+  hiddenSet.add(uid); toast("Публикации пользователя скрыты");
+  if(viewUser?.id===uid) renderOtherProfile(viewUser);
+  loadFeed();
+}
+async function unhideUser(uid){
+  const {error}=await db.from("hidden_users").delete().eq("user_id",me.id).eq("hidden_id",uid);
+  if(error) return toast(error.message);
+  hiddenSet.delete(uid); toast("Публикации снова видны");
+  if(viewUser?.id===uid) renderOtherProfile(viewUser);
+  loadFeed();
+}
+
+function accountSheet(kind){
+  const em=kind==="email";
+  openSheet(em?"Сменить email":"Сменить пароль");
+  $("sheetBody").innerHTML=`<input id="acCur" class="input" type="password" placeholder="Текущий пароль" autocomplete="current-password">`+(em
+    ?`<input id="acNew" class="input" type="email" placeholder="Новый email" autocomplete="email">`
+    :`<input id="acNew" class="input" type="password" placeholder="Новый пароль (мин. 6 символов)" autocomplete="new-password"><input id="acNew2" class="input" type="password" placeholder="Повторите новый пароль" autocomplete="new-password">`)
+    +`<button class="primary" style="width:100%" onclick="saveAccount('${kind}')">Сохранить</button>`;
+}
+async function saveAccount(kind){
+  const cur=$("acCur").value, nv=kind==="email"?$("acNew").value.trim():$("acNew").value;
+  if(!cur||!nv) return toast("Заполните все поля");
+  if(kind==="password"){
+    if(nv.length<6) return toast("Минимум 6 символов");
+    if(nv!==$("acNew2").value) return toast("Пароли не совпадают");
+  }
+  const {error:e0}=await db.auth.signInWithPassword({email:me.email,password:cur});
+  if(e0) return toast("Неверный текущий пароль");
+  const {error}=await db.auth.updateUser(kind==="email"?{email:nv}:{password:nv});
+  if(error) return toast(error.message);
+  closeSheet(); toast(kind==="email"?"Проверьте почту, чтобы подтвердить новый email":"Пароль изменён");
+}
+
+const setOff=()=>$("offline").classList.toggle("hidden",navigator.onLine);
+addEventListener("offline",setOff);
+addEventListener("online",()=>{ setOff(); if(me){ loadFeed(); loadChats(); if(chatUser) loadMessages(); } });
+setOff();
 
 if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 </script>
